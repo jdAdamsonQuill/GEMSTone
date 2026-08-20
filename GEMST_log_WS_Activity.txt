@@ -1,0 +1,6 @@
+WS_Activity:process_ws():At 202601011022.839681 received message from websocket=<websockets.asyncio.server.ServerConnection object at 0x7ea774f64aa0>
+WS_Activity:process_ws():Kind of message:option
+WS_Activity:process_ws():Echoing 'data' to ws
+WS_Activity:process_ws():At 202601011022.923208 received message from websocket=<websockets.asyncio.server.ServerConnection object at 0x7ea774f64aa0>
+WS_Activity:process_ws():Kind of message:import_eq_lib
+WS_Activity:process_ws():Got 'import_eq_lib' command, so calling load_eq_lib(DomainOfInteraction)

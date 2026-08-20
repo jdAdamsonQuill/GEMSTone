@@ -1,0 +1,755 @@
+{
+    "dx": {
+        "recid": "1",
+        "ans_name": "Distance",
+        "ans_symb": "dx",
+        "dependencies": [
+            "dt",
+            "v"
+        ],
+        "cond_expr": "",
+        "symp_eq": "Eq(dx, dt*v)",
+        "eq_metadata": {
+            "scaling": {
+                "fact": "0.1908538063694777",
+                "scaledBy": "1000000000"
+            },
+            "solution": {
+                "params": {
+                    "dt": "1.0",
+                    "v": "1.0"
+                },
+                "ans": "dt*v",
+                "mks_val": "190853806.36947772",
+                "ans_source": "Input Data",
+                "validation_status": "Needs Validation",
+                "timestamp": "202510191432.210434",
+                "ancestry": {
+                    "dt": {
+                        "dx": {
+                            "ans_source": "Input Data",
+                            "ans": "dt*v",
+                            "timestamp": "202510191432.210434"
+                        }
+                    },
+                    "v": {
+                        "dx": {
+                            "ans_source": "Input Data",
+                            "ans": "dt*v",
+                            "timestamp": "202510191432.210434"
+                        }
+                    }
+                }
+            },
+            "eq_source": "test_lib",
+            "version": "10/24/2025, 7:50:07 AM",
+            "condition_satisfied": "True",
+            "missing_params": []
+        },
+        "scale_expr": "1.0",
+        "offset_expr": "0.0"
+    },
+    "dt": {
+        "recid": "2",
+        "ans_name": "Duration",
+        "ans_symb": "dt",
+        "dependencies": [
+            "dx",
+            "v"
+        ],
+        "cond_expr": "{v}!=0",
+        "symp_eq": "Eq(dt, dx/v)",
+        "eq_metadata": {
+            "scaling": {
+                "fact": "1.0",
+                "scaledBy": "1.0"
+            },
+            "solution": {
+                "params": {
+                    "v": "1.0",
+                    "dx": "1.00000000000000"
+                },
+                "ancestry": {
+                    "v": {
+                        "dx": {
+                            "ans_source": "Input Data",
+                            "ans": "dt*v",
+                            "timestamp": "202510191432.210434"
+                        }
+                    },
+                    "dx": {
+                        "v": {
+                            "ans_source": "Input Data",
+                            "ans": "dx/dt",
+                            "timestamp": "202510191432.210434"
+                        }
+                    }
+                },
+                "ans": "dx/v",
+                "mks_val": "1.0",
+                "ans_source": "Input Data",
+                "validation_status": "Needs Validation",
+                "timestamp": "202510191432.210434"
+            },
+            "eq_source": "test_lib",
+            "version": "10/14/2025, 7:51:11 AM",
+            "condition_satisfied": "None",
+            "missing_params": []
+        },
+        "scale_expr": "1.0",
+        "offset_expr": "0.0"
+    },
+    "v": {
+        "recid": "3",
+        "ans_name": "Velocity",
+        "ans_symb": "v",
+        "dependencies": [
+            "dx",
+            "dt"
+        ],
+        "cond_expr": "{dt}!=0",
+        "symp_eq": "Eq(v, dx/dt)",
+        "eq_metadata": {
+            "scaling": {
+                "fact": "190853806.3694777",
+                "scaledBy": "1.0"
+            },
+            "solution": {
+                "params": {
+                    "dt": "1.0",
+                    "dx": "1.00000000000000"
+                },
+                "ancestry": {
+                    "dt": {
+                        "dx": {
+                            "ans_source": "Input Data",
+                            "ans": "dt*v",
+                            "timestamp": "202510191432.210434"
+                        }
+                    },
+                    "dx": {
+                        "v": {
+                            "ans_source": "Input Data",
+                            "ans": "dx/dt",
+                            "timestamp": "202510191432.210434"
+                        }
+                    }
+                },
+                "ans": "dx/dt",
+                "mks_val": "190853806.3694777",
+                "ans_source": "Input Data",
+                "validation_status": "Needs Validation",
+                "timestamp": "202510191432.210434"
+            },
+            "eq_source": "test_lib",
+            "version": "202510140800",
+            "condition_satisfied": "None",
+            "missing_params": []
+        },
+        "scale_expr": "1.0",
+        "offset_expr": "0.0"
+    },
+    "D": {
+        "recid": "4",
+        "ans_name": "Diameter",
+        "ans_symb": "D",
+        "scale_expr": "1.0",
+        "offset_expr": "0.0",
+        "cond_expr": "",
+        "symp_eq": "Eq(D, C/PI)",
+        "dependencies": [
+            "C"
+        ],
+        "eq_metadata": {
+            "scaling": {
+                "fact": "1.0",
+                "scaledBy": "1.0"
+            },
+            "solution": {
+                "params": {
+                    "C": "3.14159"
+                },
+                "ancestry": {
+                    "C": {
+                        "D": {
+                            "ans_source": "Input Data",
+                            "ans": "C/PI",
+                            "timestamp": "202510191432.210434"
+                        }
+                    }
+                },
+                "ans": "C/PI",
+                "mks_val": "1.0",
+                "ans_source": "Input Data",
+                "validation_status": "Needs Validation",
+                "timestamp": "202510191432.210434"
+            },
+            "eq_source": "test_lib",
+            "version": "10/14/2025, 07:38:22 AM",
+            "condition_satisfied": "True",
+            "missing_params": []
+        }
+    },
+    "C": {
+        "recid": "5",
+        "ans_name": "Circumference",
+        "ans_symb": "C",
+        "scale_expr": "1.0",
+        "offset_expr": "0.0",
+        "cond_expr": "",
+        "symp_eq": "Eq(C, PI*D)",
+        "dependencies": [
+            "D"
+        ],
+        "eq_metadata": {
+            "scaling": {
+                "fact": "1.0",
+                "scaledBy": "1.0"
+            },
+            "solution": {
+                "params": {
+                    "D": "1.0"
+                },
+                "ans": "PI*D",
+                "mks_val": "3.141592653589793",
+                "ans_source": "Input Data",
+                "validation_status": "Needs Validation",
+                "timestamp": "202510191432.210434",
+                "ancestry": {
+                    "D": {
+                        "C": {
+                            "ans_source": "Input Data",
+                            "ans": "PI*D",
+                            "timestamp": "202510191432.210434"
+                        }
+                    }
+                }
+            },
+            "eq_source": "test_lib",
+            "version": "10/14/2025, 07:41:22",
+            "condition_satisfied": "True",
+            "missing_params": []
+        }
+    },
+    "PI": {
+        "recid": "6",
+        "ans_name": "Computed_PI",
+        "ans_symb": "PI",
+        "scale_expr": "1.0",
+        "offset_expr": "0.0",
+        "cond_expr": "{D}>0",
+        "symp_eq": "Eq(PI, C/D)",
+        "dependencies": [
+            "C",
+            "D"
+        ],
+        "eq_metadata": {
+            "scaling": {
+                "fact": "1.0",
+                "scaledBy": "1.0"
+            },
+            "solution": {
+                "params": {
+                    "C": "3.14159265358979",
+                    "D": "1.0"
+                },
+                "ans": "C/D",
+                "mks_val": "3.14159265358979",
+                "ans_source": "Input Data",
+                "validation_status": "Needs Validation",
+                "timestamp": "202510191432.210434",
+                "ancestry": {
+                    "C": {
+                        "D": {
+                            "ans_source": "Input Data",
+                            "ans": "C/PI",
+                            "timestamp": "202510191432.210434"
+                        }
+                    },
+                    "D": {
+                        "C": {
+                            "ans_source": "Input Data",
+                            "ans": "PI*D",
+                            "timestamp": "202510191432.210434"
+                        }
+                    }
+                },
+                "decom_params": {
+                    "C": "PI*D",
+                    "D": "C/PI"
+                }
+            },
+            "eq_source": "test_lib",
+            "version": "10/14/2025, 07:26 AM",
+            "condition_satisfied": "None",
+            "missing_params": []
+        }
+    },
+    "c_dx_dt": {
+        "recid": "7",
+        "ans_name": "c=dx/dt",
+        "ans_symb": "c_dx_dt",
+        "scale_expr": "1.0",
+        "offset_expr": "0.0",
+        "cond_expr": "{dt}/{dt}=={c_geom}",
+        "symp_eq": "Eq(c_dx_dt, dx/dt)",
+        "dependencies": [
+            "dx",
+            "dt"
+        ],
+        "eq_metadata": {
+            "scaling": {
+                "fact": "1.0",
+                "scaledBy": "1.0"
+            },
+            "solution": {
+                "params": {
+                    "PI": "3.14159265358979"
+                },
+                "ans": "dx/dt",
+                "mks_val": "3.14159265358979/2.0",
+                "ans_source": "Input Data",
+                "validation_status": "Needs Validation",
+                "timestamp": "202510191432.210434",
+                "ancestry": {
+                    "PI": {
+                        "D": {
+                            "ans_source": "Input Data",
+                            "ans": "C/PI",
+                            "timestamp": "202510191432.210434"
+                        }
+                    }
+                },
+                "decom_params": {
+                    "PI": "C/D"
+                }
+            },
+            "eq_source": "test_lib",
+            "version": "10/18/2025, 08:01 AM",
+            "condition_satisfied": "None",
+            "missing_params": []
+        }
+    },
+    "c_geom": {
+        "recid": "8",
+        "ans_name": "c Geometrically",
+        "ans_symb": "c_geom",
+        "scale_expr": "1.0",
+        "offset_expr": "0.0",
+        "cond_expr": "",
+        "symp_eq": "Eq(c_geom, PI/2.0)",
+        "dependencies": [
+            "PI"
+        ],
+        "eq_metadata": {
+            "scaling": {
+                "fact": "1.0",
+                "scaledBy": "1.0"
+            },
+            "solution": {
+                "params": {
+                    "PI": "C/D"
+                },
+                "ans": "0.5*C/D",
+                "mks_val": "3.14159265358979/2.0",
+                "ans_source": "Eq(c_geom, PI/2.0)",
+                "validation_status": "Valid",
+                "timestamp": "202510191432.579087",
+                "ancestry": {
+                    "PI": {
+                        "D": {
+                            "ans_source": "Input Data",
+                            "ans": "C/PI",
+                            "timestamp": "202510191432.210434"
+                        }
+                    }
+                },
+                "decom_params": {
+                    "PI": "C/D"
+                }
+            },
+            "eq_source": "test_lib",
+            "version": "10/18/2025, 07:49 AM",
+            "condition_satisfied": "True",
+            "missing_params": []
+        }
+    },
+    "p": {
+        "recid": "9",
+        "ans_name": "Momentum",
+        "ans_symb": "p",
+        "scale_expr": "1.0",
+        "offset_expr": "0.0",
+        "cond_expr": "",
+        "symp_eq": "Eq(p, m*v)",
+        "dependencies": [
+            "v",
+            "m"
+        ],
+        "eq_metadata": {
+            "scaling": {
+                "fact": "3.642517540571808e+16",
+                "scaledBy": "1e-18"
+            },
+            "solution": {
+                "params": {
+                    "v": "dx/dt",
+                    "m": "equiv_E/c_geom*c_dx_dt"
+                },
+                "ans": "dx*equiv_E/(c_dx_dt*c_geom*dt)",
+                "mks_val": "0.0036425175405718083",
+                "ans_source": "Eq(p, m*v)",
+                "validation_status": "Valid",
+                "timestamp": "202510191432.627832",
+                "ancestry": {
+                    "v": {
+                        "dx": {
+                            "ans_source": "Input Data",
+                            "ans": "dt*v",
+                            "timestamp": "202510191432.210434"
+                        }
+                    },
+                    "m": {
+                        "c_geom": {
+                            "ans_source": "Eq(c_geom, PI/2.0)",
+                            "ans": "0.5*C/D",
+                            "timestamp": "202510191432.579087"
+                        }
+                    }
+                },
+                "decom_params": {
+                    "v": "dx/dt",
+                    "m": "equiv_E/(c_geom*c_dx_dt)"
+                }
+            },
+            "eq_source": "test_lib",
+            "version": "202510140744",
+            "condition_satisfied": "True",
+            "missing_params": []
+        }
+    },
+    "Energy": {
+        "recid": "10",
+        "ans_name": "Energy",
+        "ans_symb": "Energy",
+        "dependencies": [
+            "m",
+            "c_dx_dt",
+            "c_geom"
+        ],
+        "symp_eq": "Eq(E, m*c_dx_dt*c_geom)",
+        "eq_metadata": {
+            "scaling": {
+                "fact": "3.642517540571808e+16",
+                "scaledBy": "1e-18"
+            },
+            "solution": {
+                "params": {
+                    "equiv_E": "0.246740110027234",
+                    "c_dx_dt": "1.5707963267948966",
+                    "c_geom": "1.5707963267948966"
+                },
+                "decom_params": {
+                    "equiv_E": "m*c_geom*c_dx_dt",
+                    "c_dx_dt": "dx/dt",
+                    "c_geom": "PI/2.0"
+                },
+                "ancestry": {
+                    "equiv_E": {
+                        "E_KE": {
+                            "ans_source": "Input Data",
+                            "ans": "scale*(m*C*dx)/(2*D*dt)",
+                            "timestamp": "202510191432.210434"
+                        }
+                    },
+                    "c_dx_dt": {
+                        "PI": {
+                            "ans_source": "Input Data",
+                            "ans": "C/D",
+                            "timestamp": "202510191432.210434"
+                        }
+                    },
+                    "c_geom": {
+                        "PI": {
+                            "ans_source": "Input Data",
+                            "ans": "C/D",
+                            "timestamp": "202510191432.210434"
+                        }
+                    }
+                },
+                "ans": "m*c_dx_dt*c_geom",
+                "mks_val": "0.040128819101551055",
+                "ans_source": "Input Data",
+                "validation_status": "Needs Validation",
+                "timestamp": "202510191432.210434"
+            },
+            "eq_source": "test_lib",
+            "version": "202510140746",
+            "condition_satisfied": "True",
+            "missing_params": []
+        },
+        "scale_expr": "1.0",
+        "offset_expr": "0.0",
+        "cond_expr": ""
+    },
+    "m": {
+        "recid": "11",
+        "ans_name": "mass",
+        "ans_symb": "m",
+        "dependencies": [
+            "equiv_E",
+            "c_dx_dt",
+            "c_geom"
+        ],
+        "symp_eq": "Eq(m, equiv_E/c_geom*c_dx_dt)",
+        "eq_metadata": {
+            "scaling": {
+                "fact": "3.642517540571808e+16",
+                "scaledBy": "1e-18"
+            },
+            "solution": {
+                "params": {
+                    "equiv_E": "0.246740110027234",
+                    "c_dx_dt": "1.5707963267948966",
+                    "c_geom": "1.5707963267948966"
+                },
+                "ancestry": {
+                    "equiv_E": {
+                        "E_KE": {
+                            "ans_source": "Input Data",
+                            "ans": "scale*(m*C*dx)/(2*D*dt)",
+                            "timestamp": "202510191432.210434"
+                        }
+                    },
+                    "c_dx_dt": {
+                        "PI": {
+                            "ans_source": "Input Data",
+                            "ans": "C/D",
+                            "timestamp": "202510191432.210434"
+                        }
+                    },
+                    "c_geom": {
+                        "PI": {
+                            "ans_source": "Input Data",
+                            "ans": "C/D",
+                            "timestamp": "202510191432.210434"
+                        }
+                    }
+                },
+                "ans": "equiv_E/c_geom*c_dx_dt",
+                "mks_val": "0.040128819101551055",
+                "ans_source": "Input Data",
+                "validation_status": "Needs Validation",
+                "timestamp": "202510191432.210434",
+                "decom_params": {
+                    "equiv_E": "0.246740110027234",
+                    "c_dx_dt": "dx/dt",
+                    "c_geom": "PI/2.0"
+                }
+            },
+            "eq_source": "test_lib",
+            "version": "202510140746",
+            "condition_satisfied": "True",
+            "missing_params": []
+        },
+        "scale_expr": "1.0",
+        "offset_expr": "0.0",
+        "cond_expr": ""
+    },
+    "E_KE": {
+        "recid": "12",
+        "ans_name": "EquivOrKineticEnergy",
+        "ans_symb": "E_KE",
+        "dependencies": [
+            "m",
+            "C",
+            "dx",
+            "D",
+            "dt",
+            "c_dx_dt",
+            "c_geom",
+            "scale"
+        ],
+        "_note_scaling": "When velocity dx/dt is less than c it is Kinematic energy; otherwise E=m*c**2 where dx/dt=c",
+        "scale_expr": "0.5 if {dx}/{dt} < {c_geom} else 1.0",
+        "offset_expr": "0.0",
+        "_remark": "An object must have velocity v=dx/dt less than lightspeed or be Energy with no mass at lightspeed",
+        "cond_expr": "({dt}!=0 and {dx}/{dt}<{c_geom}) or (is_equiv({m},0.0) and is_equiv({dx}/{dt},{c_geom}))",
+        "symp_eq": "Eq(E_KE, scale*(m*C*dx)/(2*D*dt))",
+        "eq_metadata": {
+            "scaling": {
+                "fact": "3.642517540571808e+16",
+                "scaledBy": "1e-15"
+            },
+            "solution": {
+                "params": {
+                    "m": "0.1",
+                    "C": "3.14159265358979",
+                    "dx": "1.00000000000000",
+                    "D": "1.0",
+                    "dt": "1.0",
+                    "c_dx_dt": "1.5707963267948966",
+                    "c_geom": "1.5707963267948966"
+                },
+                "ans": "scale*(m*C*dx)/(2*D*dt)",
+                "mks_val": "2.8608265865080877",
+                "ans_source": "Input Data",
+                "validation_status": "Needs Validation",
+                "timestamp": "202510191432.210434",
+                "ancestry": {
+                    "m": {
+                        "c_geom": {
+                            "ans_source": "Eq(c_geom, PI/2.0)",
+                            "ans": "0.5*C/D",
+                            "timestamp": "202510191432.579087"
+                        }
+                    },
+                    "C": {
+                        "D": {
+                            "ans_source": "Input Data",
+                            "ans": "C/PI",
+                            "timestamp": "202510191432.210434"
+                        }
+                    },
+                    "dx": {
+                        "v": {
+                            "ans_source": "Input Data",
+                            "ans": "dx/dt",
+                            "timestamp": "202510191432.210434"
+                        }
+                    },
+                    "D": {
+                        "C": {
+                            "ans_source": "Input Data",
+                            "ans": "PI*D",
+                            "timestamp": "202510191432.210434"
+                        }
+                    },
+                    "dt": {
+                        "dx": {
+                            "ans_source": "Input Data",
+                            "ans": "dt*v",
+                            "timestamp": "202510191432.210434"
+                        }
+                    },
+                    "c_dx_dt": {
+                        "PI": {
+                            "ans_source": "Input Data",
+                            "ans": "C/D",
+                            "timestamp": "202510191432.210434"
+                        }
+                    },
+                    "c_geom": {
+                        "PI": {
+                            "ans_source": "Input Data",
+                            "ans": "C/D",
+                            "timestamp": "202510191432.210434"
+                        }
+                    }
+                },
+                "decom_params": {
+                    "m": "0.1",
+                    "C": "PI*D",
+                    "dx": "dt*v",
+                    "D": "C/PI",
+                    "dt": "dx/v",
+                    "c_dx_dt": "dx/dt",
+                    "c_geom": "PI/2.0"
+                }
+            },
+            "eq_source": "gemst_eq_lib",
+            "version": "202510131700",
+            "condition_satisfied": "True",
+            "missing_params": []
+        }
+    },
+    "KE": {
+        "recid": "13",
+        "ans_name": "Kinetic Energy",
+        "ans_symb": "KE",
+        "dependencies": [
+            "E_KE"
+        ],
+        "cond_expr": "{v}<{c_geom}",
+        "symp_eq": "Eq(KE, (m*C*dx)/(4*D*dt))",
+        "eq_metadata": {
+            "scaling": {
+                "fact": "3.642517540571808e+16",
+                "scaledBy": "1e-18"
+            },
+            "solution": {
+                "params": {
+                    "E_KE": "0.0785398163397448"
+                },
+                "ancestry": {
+                    "E_KE": {
+                        "c_geom": {
+                            "ans_source": "Eq(c_geom, PI/2.0)",
+                            "ans": "0.5*C/D",
+                            "timestamp": "202510191432.579087"
+                        }
+                    }
+                },
+                "ans": "(m*C*dx)/(4*D*dt)",
+                "mks_val": "0.0028608265865080872",
+                "ans_source": "Input Data",
+                "validation_status": "Needs Validation",
+                "timestamp": "202510191432.210434",
+                "decom_params": {
+                    "E_KE": "scale*(m*C*dx)/(2*D*dt)"
+                }
+            },
+            "eq_source": "test_lib",
+            "version": "20250819_1230",
+            "condition_satisfied": "None",
+            "missing_params": []
+        },
+        "scale_expr": "1.0",
+        "offset_expr": "0.0"
+    },
+    "equiv_E": {
+        "recid": "14",
+        "ans_name": "Equivalent_Energy",
+        "ans_symb": "equiv_E",
+        "dependencies": [
+            "E_KE"
+        ],
+        "cond_expr": "{v}=={c_geom}",
+        "symp_eq": "Eq(equiv_E, m*c_geom*c_dx_dt)",
+        "_symp_eq": "Eq(equiv_E, (m*C*dx)/(2*D*dt))",
+        "eq_metadata": {
+            "scaling": {
+                "fact": "3.642517540571808e+16",
+                "scaledBy": "1e-18"
+            },
+            "solution": {
+                "params": {
+                    "E_KE": "0.0785398163397448"
+                },
+                "ancestry": {
+                    "E_KE": {
+                        "c_geom": {
+                            "ans_source": "Eq(c_geom, PI/2.0)",
+                            "ans": "0.5*C/D",
+                            "timestamp": "202510191432.579087"
+                        }
+                    }
+                },
+                "ans": "m*c_geom*c_dx_dt",
+                "mks_val": "0.008987551787368177",
+                "ans_source": "Input Data",
+                "validation_status": "Needs Validation",
+                "timestamp": "202510191432.210434",
+                "decom_params": {
+                    "E_KE": "scale*(m*C*dx)/(2*D*dt)"
+                }
+            },
+            "eq_source": "test_lib",
+            "version": "20250819_1230",
+            "condition_satisfied": "None",
+            "missing_params": []
+        },
+        "scale_expr": "1.0",
+        "offset_expr": "0.0"
+    }
+}

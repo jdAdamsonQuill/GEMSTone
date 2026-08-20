@@ -1,0 +1,6 @@
+{
+    "DomainOfInteraction":{"id":"DomainOfInteraction", "Q": "1"}, 
+    "Electron":{"id":"Electron", "Q": "1"}, 
+    "Photon":{"id":"Photon", "Q": "1"}, 
+    "Positron":{"id":"Positron", "Q": "1"}
+}

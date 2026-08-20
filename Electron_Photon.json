@@ -1,0 +1,47 @@
+{
+    "Electron_Photon": {
+        "recid": "1",
+        "ans_name": "Q1Electron_Q2Photon",
+        "ans_symb": "Electron_Photon",
+        "_remark": "SuperSTones depend on GEMSTones",
+        "dependencies": [ "Electron", "Photon" ],
+        "scale_expr": "",
+        "offset_expr": "",
+        "cond_expr": "",
+        "symp_eq": "superposition",
+        "eq_metadata": {
+            "scaling": {
+                "fact": "3.642517540571808e+16",
+                "scaledBy": "1e-15"
+            },
+            "solution": {
+                "_params": "Quantized Accumulation after interaction",
+                "params": {
+                    "energy": "0.0196349540849362",
+                    "m": "0.0785398163397448",
+                    "C": "0.0785398163397448",
+                    "D": "0.0785398163397448",
+                    "dx": "0.0785398163397448",
+                    "dt": "0.0785398163397448"
+                },
+                "color_spec": {
+                    "hue": "210",
+                    "saturation": "0.85",
+                    "brightness": "0.65",
+                    "_RGB_hex": "Ultimately Algorithmic: mass:=blue scaled by HSB as Freq/Energy/Amplitude",
+                    "RGB_hex": "0x0000FF"
+                },
+                "ans": "0.0196349540849362",
+                "ans_source": "tbd",
+                "timestamp": "tbd",
+                "validation_status": "tbd",
+                "ancestry": {},
+                "decom_params": {}
+            },
+            "eq_source": "gemst_eq_lib",
+            "version": "202511121127",
+            "condition_satisfied": "True",
+            "missing_params": []
+        }
+    }
+}

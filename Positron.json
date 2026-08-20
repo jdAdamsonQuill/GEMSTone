@@ -1,0 +1,421 @@
+{
+    "Energy": {
+        "recid": "1",
+        "ans_name": "Energy",
+        "ans_symb": "Energy",
+        "dependencies": [
+            "m",
+            "C",
+            "D",
+            "dx",
+            "dt",
+            "scale"
+        ],
+        "scale_expr": "2.0 if is_equiv({dx}/{dt},{c}) else 4.0",
+        "offset_expr": "",
+        "_remark": "Equivalent Energy is where v=dx/dt=c",
+        "_note": "Not requiring C/D=pi because acceleration impacts Need to be recalculated, not skipped",
+        "_note2": "Distinguishing local particle dx/dt from average object dx/dt",
+        "cond_expr": "not is_equiv({D}*{dt}, 0.0) and ({dx}/{dt}=={c})",
+        "symp_eq": "Eq(Energy,   (m*C*-dx)/(scale*D*-dt))",
+        "eq_metadata": {
+            "scaling": {
+                "fact": "3.642517540571808e+16",
+                "scaledBy": "1e-15"
+            },
+            "solution": {
+                "params": {
+                    "m": "0.0785398163397448",
+                    "C": "0.0785398163397448",
+                    "D": "0.0785398163397448",
+                    "dx": "0.0785398163397448",
+                    "dt": "0.0785398163397448",
+                    "scale": "4.0"
+                },
+                "color_spec": {
+                    "hue": "210",
+                    "saturation": "0.85",
+                    "brightness": "0.65",
+                    "RGB_hex": "0xffff00"
+                },
+                "ans": 0.0785398163397448,
+                "mks_val": "2.8608265865080877",
+                "ans_source": "DOI.json",
+                "validation_status": "Valid",
+                "timestamp": "202511111725.0"
+            },
+            "eq_source": "gemst_eq_lib",
+            "version": "202510191241",
+            "condition_satisfied": "False"
+        }
+    },
+    "m": {
+        "recid": "2",
+        "ans_name": "Mass",
+        "ans_symb": "m",
+        "dependencies": [
+            "Energy",
+            "C",
+            "D",
+            "dx",
+            "dt",
+            "scale"
+        ],
+        "scale_expr": "2.0 if is_equiv({dx}/{dt},{c}) else 4.0",
+        "offset_expr": "",
+        "_remark": "Equivalent mass is where v=dx/dt=c",
+        "cond_expr": "not is_equiv({C}*{dx}*{dt}, 0.0) and is_equiv({dx}/{dt}, {c})",
+        "symp_eq": "Eq(m,  -(scale*Energy*-dt*D)/(C*-dx))",
+        "eq_metadata": {
+            "scaling": {
+                "fact": "3.642517540571808e+16",
+                "scaledBy": "1e-15"
+            },
+            "solution": {
+                "params": {
+                    "Energy": "0.0196349540849362",
+                    "C": "0.0785398163397448",
+                    "D": "0.0785398163397448",
+                    "dx": "0.0785398163397448",
+                    "dt": "0.0785398163397448",
+                    "scale": "4.0"
+                },
+                "color_spec": {
+                    "hue": "210",
+                    "saturation": "0.85",
+                    "brightness": "0.65",
+                    "RGB_hex": "0x0000ff"
+                },
+                "ans": 1,
+                "mks_val": "2.8608265865080877",
+                "ans_source": "Input Data",
+                "validation_status": "Input Data",
+                "timestamp": "202511041934.258820"
+            },
+            "eq_source": "gemst_eq_lib",
+            "version": "202510191241",
+            "condition_satisfied": "True"
+        }
+    },
+    "dx": {
+        "recid": "3",
+        "ans_name": "Distance",
+        "ans_symb": "dx",
+        "dependencies": [
+            "Energy",
+            "C",
+            "m",
+            "D",
+            "dt",
+            "scale"
+        ],
+        "scale_expr": "2.0 if is_equiv({dx}/{dt},{c}) else 4.0",
+        "offset_expr": "",
+        "_remark": "For Energy, v=dx/dt=c",
+        "cond_expr": "not is_equiv({C}*{m}*{dt}, 0.0) and is_equiv({dx}/{dt}, {c})",
+        "symp_eq": "Eq(dx,   (scale*Energy*-dt*D)/(C*m))",
+        "eq_metadata": {
+            "scaling": {
+                "fact": "3.642517540571808e+16",
+                "scaledBy": "1e-15"
+            },
+            "solution": {
+                "params": {
+                    "Energy": "0.0196349540849362",
+                    "m": "0.0785398163397448",
+                    "C": "0.0785398163397448",
+                    "D": "0.0785398163397448",
+                    "dt": "0.0785398163397448",
+                    "scale": "4.0"
+                },
+                "color_spec": {
+                    "hue": "210",
+                    "saturation": "0.85",
+                    "brightness": "0.65",
+                    "RGB_hex": "0xff00ff"
+                },
+                "ans": 1,
+                "mks_val": "tbd",
+                "ans_source": "Input Data",
+                "validation_status": "Input Data",
+                "timestamp": "202511041934.258820"
+            },
+            "eq_source": "gemst_eq_lib",
+            "version": "202510191241",
+            "condition_satisfied": "True"
+        }
+    },
+    "dt": {
+        "recid": "4",
+        "ans_name": "Duration",
+        "ans_symb": "dt",
+        "dependencies": [
+            "Energy",
+            "C",
+            "m",
+            "D",
+            "dx",
+            "scale"
+        ],
+        "scale_expr": "2.0 if is_equiv({dx}/{dt},{c}) else 4.0",
+        "offset_expr": "",
+        "_remark": "For Energy v=dx/dt=c",
+        "cond_expr": "not is_equiv({D}*{Energy}*{dt}, 0.0) and is_equiv({dx}/{dt}, {c})",
+        "symp_eq": "Eq(dt,   ((m*C*-dx)/(scale*Energy*D))",
+        "eq_metadata": {
+            "scaling": {
+                "fact": "3.642517540571808e+16",
+                "scaledBy": "1e-15"
+            },
+            "solution": {
+                "params": {
+                    "Energy": "0.0196349540849362",
+                    "m": "0.0785398163397448",
+                    "C": "0.0785398163397448",
+                    "D": "0.0785398163397448",
+                    "dx": "0.0785398163397448",
+                    "scale": "4.0"
+                },
+                "color_spec": {
+                    "hue": "210",
+                    "saturation": "0.85",
+                    "brightness": "0.65",
+                    "RGB_hex": "0x00ffff"
+                },
+                "ans": 1,
+                "mks_val": "2.8608265865080877",
+                "ans_source": "Input Data",
+                "validation_status": "Input Data",
+                "timestamp": "202511041934.258820"
+            },
+            "eq_source": "gemst_eq_lib",
+            "version": "202510191241",
+            "condition_satisfied": "True"
+        }
+    },
+    "D": {
+        "recid": "5",
+        "ans_name": "Diameter",
+        "ans_symb": "D",
+        "dependencies": [
+            "Energy",
+            "C",
+            "m",
+            "dx",
+            "dt",
+            "scale"
+        ],
+        "scale_expr": "2.0 if is_equiv({dx}/{dt},{c}) else 4.0",
+        "offset_expr": "",
+        "_remark": "For Energy v=dx/dt=c",
+        "cond_expr": "not is_equiv({dt}*{Energy}*{dt}, 0.0) and is_equiv({dx}/{dt}, {c})",
+        "symp_eq": "Eq(D,   ((m*C*-dx)/(scale*Energy*-dt))",
+        "eq_metadata": {
+            "scaling": {
+                "fact": "3.642517540571808e+16",
+                "scaledBy": "1e-15"
+            },
+            "solution": {
+                "params": {
+                    "Energy": "0.0196349540849362",
+                    "m": "0.0785398163397448",
+                    "C": "0.0785398163397448",
+                    "dx": "0.0785398163397448",
+                    "dt": "0.0785398163397448",
+                    "scale": "4.0"
+                },
+                "color_spec": {
+                    "hue": "210",
+                    "saturation": "0.85",
+                    "brightness": "0.65",
+                    "RGB_hex": "0xff0000"
+                },
+                "ans": 1,
+                "mks_val": "2.8608265865080877",
+                "ans_source": "Input Data",
+                "validation_status": "Input Data",
+                "timestamp": "202511041934.258820"
+            },
+            "eq_source": "gemst_eq_lib",
+            "version": "202510191241",
+            "condition_satisfied": "True"
+        }
+    },
+    "C": {
+        "recid": "6",
+        "ans_name": "Circumference",
+        "ans_symb": "C",
+        "dependencies": [
+            "Energy",
+            "D",
+            "m",
+            "dx",
+            "dt",
+            "scale"
+        ],
+        "scale_expr": "2.0 if is_equiv({dx}/{dt},{c}) else 4.0",
+        "offset_expr": "",
+        "_remark": "For Energy v=dx/dt=c",
+        "cond_expr": "not is_equiv({m}*{dx}*{dt}, 0.0) and is_equiv({dx}/{dt}, {c})",
+        "symp_eq": "Eq(C,   (scale*Energy*-dt*D)/(-dx*m))",
+        "eq_metadata": {
+            "scaling": {
+                "fact": "3.642517540571808e+16",
+                "scaledBy": "1e-15"
+            },
+            "solution": {
+                "params": {
+                    "Energy": "0.0196349540849362",
+                    "m": "0.0785398163397448",
+                    "D": "0.0785398163397448",
+                    "dx": "0.0785398163397448",
+                    "dt": "0.0785398163397448",
+                    "scale": "4.0"
+                },
+                "color_spec": {
+                    "hue": "210",
+                    "saturation": "0.85",
+                    "brightness": "0.65",
+                    "RGB_hex": "0x00ff00"
+                },
+                "ans": 0.0785398163397448,
+                "mks_val": "2.8608265865080877",
+                "ans_source": "Input Data",
+                "validation_status": "Input Data",
+                "timestamp": "202511041934.258820"
+            },
+            "eq_source": "gemst_eq_lib",
+            "version": "202510191241",
+            "condition_satisfied": "True"
+        }
+    },
+    "v": {
+        "recid": "7",
+        "ans_name": "Velocity",
+        "ans_symb": "v",
+        "dependencies": [
+            "dx",
+            "dt"
+        ],
+        "cond_expr": "not is_equiv({dt}, 0.0)",
+        "symp_eq": "Eq(v,  -dx/-dt)",
+        "eq_metadata": {
+            "scaling": {
+                "fact": "190853806.3694777",
+                "scaledBy": "1.0"
+            },
+            "solution": {
+                "params": {
+                    "dx": "1.00000000000000",
+                    "dt": "1.00000000000000"
+                },
+                "color_spec": {
+                    "hue": "210",
+                    "saturation": "0.85",
+                    "brightness": "0.65",
+                    "RGB_hex": "0x0000FF"
+                },
+                "ans": 1,
+                "mks_val": "190853806.3694777",
+                "ans_source": "Eq(v, dx/dt)",
+                "validation_status": "Valid",
+                "timestamp": "202511041934.740300"
+            },
+            "eq_source": "gemst_eq_lib",
+            "version": "202510191300",
+            "condition_satisfied": "True"
+        },
+        "scale_expr": "1.0",
+        "offset_expr": "0.0"
+    },
+    "Freq": {
+        "recid": "8",
+        "ans_name": "Frequency",
+        "ans_symb": "Freq",
+        "scale_expr": "1.0",
+        "offset_expr": "0.0",
+        "cond_expr": "",
+        "_symp_eq": "TODO: Energy needs to be converted to mks! Or, cradian_h from planck_h",
+        "symp_eq": "Eq(Freq, Energy/planck_h)",
+        "dependencies": [
+            "Energy",
+            "planck_h"
+        ],
+        "eq_metadata": {
+            "scaling": {
+                "fact": "1",
+                "scaledBy": "1"
+            },
+            "solution": {
+                "params": {
+                    "tbd": "tbd"
+                },
+                "color_spec": {
+                    "hue": "210",
+                    "saturation": "0.85",
+                    "brightness": "0.65",
+                    "RGB_hex": "0xFFFF00"
+                },
+                "ans": "1.18531519530841e+32",
+                "mks_val": "1.18531519530841e+32",
+                "ans_source": "Eq(Freq, Energy/planck_h)",
+                "timestamp": "202511131743.0",
+                "validation_status": "Valid",
+                "ancestry": {}
+            },
+            "eq_source": "DOI",
+            "version": "202511130848",
+            "condition_satisfied": "True",
+            "missing_params": []
+        }
+    },
+    "p": {
+        "recid": "9",
+        "ans_name": "Momentum",
+        "ans_symb": "p",
+        "scale_expr": "1.0",
+        "offset_expr": "0.0",
+        "cond_expr": "not is_equiv({dt}, 0.0)",
+        "symp_eq": "Eq(p, m*v)",
+        "dependencies": [
+            "v",
+            "m"
+        ],
+        "eq_metadata": {
+            "scaling": {
+                "fact": "3.642517540571808e+16",
+                "scaledBy": "1e-18"
+            },
+            "solution": {
+                "params": {
+                    "v": "1.00000000000000",
+                    "m": "0.0785398163397448"
+                },
+                "color_spec": {
+                    "hue": "210",
+                    "saturation": "0.85",
+                    "brightness": "0.65",
+                    "RGB_hex": "0x0000FF"
+                },
+                "ans": 1,
+                "mks_val": "0.0028608265865080872",
+                "ans_source": "Eq(p, m*v)",
+                "timestamp": "202511041934.838144",
+                "validation_status": "Valid",
+                "ancestry": {
+                    "v": {
+                        "dt": {
+                            "ans_source": "Eq(dt, dx/v)",
+                            "ans": "1.00000000000000",
+                            "timestamp": "202511041934.655833"
+                        }
+                    }
+                }
+            },
+            "eq_source": "gemst_eq_lib",
+            "version": "202510140744",
+            "condition_satisfied": "True",
+            "missing_params": []
+        }
+    }
+}

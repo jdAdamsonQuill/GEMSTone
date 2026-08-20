@@ -1,0 +1,637 @@
+{
+    "Energy": {
+        "recid": "1",
+        "ans_name": "Energy",
+        "ans_symb": "Energy",
+        "dependencies": [
+            "m_E",
+            "C_E",
+            "dx_E",
+            "D_E",
+            "dt_E"
+        ],
+        "scale_expr": "",
+        "offset_expr": "",
+        "_remark": "Equivalent Energy is where v=dx/dt=c",
+        "_note": "Not requiring C/D=pi because acceleration impacts Need to be recalculated, not skipped",
+        "_note2": "Distinguishing local particle dx_E/dt_E from average object dx/dt",
+        "cond_expr": "not is_equiv({D_E}*{dt_E}*{dt}, 0.0) and ({dx}/{dt}=={c})",
+        "symp_eq": "Eq(Energy, (m_E*C_E*dx_E)/(2*D_E*dt_E))",
+        "eq_metadata": {
+            "scaling": {
+                "fact": "3.642517540571808e+16",
+                "scaledBy": "1e-15"
+            },
+            "solution": {
+                "params": {},
+                "color_spec": {
+                    "hue": "210",
+                    "saturation": "0.85",
+                    "brightness": "0.65",
+                    "RGB_hex": "0xffff00"
+                },
+                "ans": "0.0785398163397448",
+                "mks_val": "2.8608265865080877",
+                "ans_source": "tbd",
+                "timestamp": "tbd",
+                "validation_status": "tbd"
+            },
+            "eq_source": "gemst_eq_lib",
+            "version": "202510191241",
+            "condition_satisfied": "True"
+        }
+    },
+    "m_E": {
+        "recid": "2",
+        "ans_name": "Mass",
+        "ans_symb": "m_E",
+        "dependencies": [
+            "Energy",
+            "C_E",
+            "dx_E",
+            "D_E",
+            "dt_E"
+        ],
+        "scale_expr": "",
+        "offset_expr": "",
+        "_remark": "Equivalent mass is where v=dx/dt=c",
+        "cond_expr": "not is_equiv({C_E}*{dx_E}*{dt}, 0.0) and is_equiv({dx}/{dt}, {c})",
+        "symp_eq": "Eq(m, (2*Energy*dt_E*D_E)/(C_E*dx_E))",
+        "eq_metadata": {
+            "scaling": {
+                "fact": "3.642517540571808e+16",
+                "scaledBy": "1e-15"
+            },
+            "solution": {
+                "params": {},
+                "color_spec": {
+                    "hue": "210",
+                    "saturation": "0.85",
+                    "brightness": "0.65",
+                    "RGB_hex": "0x0000ff"
+                },
+                "ans": 1,
+                "mks_val": "2.8608265865080877",
+                "ans_source": "tbd",
+                "timestamp": "tbd",
+                "validation_status": "tbd"
+            },
+            "eq_source": "gemst_eq_lib",
+            "version": "202510191241",
+            "condition_satisfied": "True"
+        }
+    },
+    "dx_E": {
+        "recid": "3",
+        "ans_name": "Distance",
+        "ans_symb": "dx_E",
+        "dependencies": [
+            "Energy",
+            "C_E",
+            "m_E",
+            "D_E",
+            "dt_E"
+        ],
+        "scale_expr": "",
+        "offset_expr": "",
+        "_remark": "For Energy, v=dx/dt=c",
+        "cond_expr": "not is_equiv({C_E}*{m_E}*{dt}, 0.0) and is_equiv({dx}/{dt}, {c})",
+        "symp_eq": "Eq(dx_E, (2*Energy*dt_E*D_E)/(C_E*m_E))",
+        "eq_metadata": {
+            "scaling": {
+                "fact": "3.642517540571808e+16",
+                "scaledBy": "1e-15"
+            },
+            "solution": {
+                "params": {},
+                "color_spec": {
+                    "hue": "210",
+                    "saturation": "0.85",
+                    "brightness": "0.65",
+                    "RGB_hex": "0xff00ff"
+                },
+                "ans": "tbd",
+                "mks_val": "tbd",
+                "ans_source": "tbd",
+                "timestamp": "tbd",
+                "validation_status": "tbd"
+            },
+            "eq_source": "gemst_eq_lib",
+            "version": "202510191241",
+            "condition_satisfied": "True"
+        }
+    },
+    "dt_E": {
+        "recid": "4",
+        "ans_name": "Duration",
+        "ans_symb": "dt_E",
+        "dependencies": [
+            "Energy",
+            "C_E",
+            "m_E",
+            "D_E",
+            "dx_E"
+        ],
+        "scale_expr": "",
+        "offset_expr": "",
+        "_remark": "For Energy v=dx/dt=c",
+        "cond_expr": "not is_equiv({D_E}*{Energy}*{dt}, 0.0) and is_equiv({dx}/{dt}, {c})",
+        "symp_eq": "Eq(dt_E, ((m_E*C_E*dx_E)/(2*Energy*D_E))",
+        "eq_metadata": {
+            "scaling": {
+                "fact": "3.642517540571808e+16",
+                "scaledBy": "1e-15"
+            },
+            "solution": {
+                "params": {},
+                "color_spec": {
+                    "hue": "210",
+                    "saturation": "0.85",
+                    "brightness": "0.65",
+                    "RGB_hex": "0x00ffff"
+                },
+                "ans": 1,
+                "mks_val": "2.8608265865080877",
+                "ans_source": "tbd",
+                "timestamp": "tbd",
+                "validation_status": "Valid"
+            },
+            "eq_source": "gemst_eq_lib",
+            "version": "202510191241",
+            "condition_satisfied": "True"
+        }
+    },
+    "D_E": {
+        "recid": "5",
+        "ans_name": "Diameter",
+        "ans_symb": "D_E",
+        "dependencies": [
+            "Energy",
+            "C_E",
+            "m_E",
+            "dx_E",
+            "dt_E"
+        ],
+        "scale_expr": "",
+        "offset_expr": "",
+        "_remark": "For Energy v=dx/dt=c",
+        "cond_expr": "not is_equiv({dt_E}*{Energy}*{dt}, 0.0) and is_equiv({dx}/{dt}, {c})",
+        "symp_eq": "Eq(D, ((m_E*C_E*dx_E)/(2*Energy*dt_E))",
+        "eq_metadata": {
+            "scaling": {
+                "fact": "3.642517540571808e+16",
+                "scaledBy": "1e-15"
+            },
+            "solution": {
+                "params": {},
+                "color_spec": {
+                    "hue": "210",
+                    "saturation": "0.85",
+                    "brightness": "0.65",
+                    "RGB_hex": "0xff0000"
+                },
+                "ans": 1,
+                "mks_val": "2.8608265865080877",
+                "ans_source": "tbd",
+                "timestamp": "tbd",
+                "validation_status": "tbd"
+            },
+            "eq_source": "gemst_eq_lib",
+            "version": "202510191241",
+            "condition_satisfied": "True"
+        }
+    },
+    "C_E": {
+        "recid": "6",
+        "ans_name": "Circumference",
+        "ans_symb": "C_E",
+        "dependencies": [
+            "Energy",
+            "D_E",
+            "m_E",
+            "dx_E",
+            "dt_E"
+        ],
+        "scale_expr": "",
+        "offset_expr": "",
+        "_remark": "For Energy v=dx/dt=c",
+        "cond_expr": "not is_equiv({m_E}*{dx_E}*{dt}, 0.0) and is_equiv({dx}/{dt}, {c})",
+        "symp_eq": "Eq(C, (2*Energy*dt_E*D_E)/(dx_E*m_E))",
+        "eq_metadata": {
+            "scaling": {
+                "fact": "3.642517540571808e+16",
+                "scaledBy": "1e-15"
+            },
+            "solution": {
+                "params": {},
+                "color_spec": {
+                    "hue": "210",
+                    "saturation": "0.85",
+                    "brightness": "0.65",
+                    "RGB_hex": "0x00ff00"
+                },
+                "ans": "0.0785398163397448",
+                "mks_val": "2.8608265865080877",
+                "ans_source": "tbd",
+                "timestamp": "tbd",
+                "validation_status": "tbd"
+            },
+            "eq_source": "gemst_eq_lib",
+            "version": "202510191241",
+            "condition_satisfied": "True"
+        }
+    },
+    "KE": {
+        "recid": "7",
+        "ans_name": "Kinetic Energy",
+        "ans_symb": "KE",
+        "dependencies": [
+            "m_KE",
+            "C_KE",
+            "dx_KE",
+            "D_KE",
+            "dt_KE"
+        ],
+        "scale_expr": "",
+        "offset_expr": "",
+        "_remark": "Kinetic Energy is where v=dx/dt<c",
+        "cond_expr": "not is_equiv({D_KE}*{dt_KE}*{dt}, 0.0) and ({dx}/{dt}<{c})",
+        "symp_eq": "Eq(KE, (m_KE*C_KE*dx_KE)/(4*D_KE*dt_KE))",
+        "eq_metadata": {
+            "scaling": {
+                "fact": "3.642517540571808e+16",
+                "scaledBy": "1e-15"
+            },
+            "solution": {
+                "params": {},
+                "color_spec": {
+                    "hue": "210",
+                    "saturation": "0.85",
+                    "brightness": "0.65",
+                    "RGB_hex": "0xffff00"
+                },
+                "ans": "0.0785398163397448",
+                "mks_val": "2.8608265865080877",
+                "ans_source": "tbd",
+                "timestamp": "tbd",
+                "validation_status": "tbd",
+                "ancestry": {},
+                "decom_params": {}
+            },
+            "eq_source": "gemst_eq_lib",
+            "version": "202510191241",
+            "condition_satisfied": "True",
+            "missing_params": []
+        }
+    },
+    "m_KE": {
+        "recid": "8",
+        "ans_name": "Mass Kinetic",
+        "ans_symb": "m_KE",
+        "dependencies": [
+            "C_KE",
+            "dx_KE",
+            "D_KE",
+            "dt_KE",
+            "KE"
+        ],
+        "scale_expr": "",
+        "offset_expr": "",
+        "_remark": "Equivalent mass Kinetic is where v=dx/dt<c",
+        "cond_expr": "not is_equiv({C_KE}*{dx_KE}*{dt}, 0.0) and ({dx}/{dt}<{c})",
+        "symp_eq": "Eq(m, (4*Energy*dt_KE*D_KE)/(C_KE*dx_KE))",
+        "eq_metadata": {
+            "scaling": {
+                "fact": "3.642517540571808e+16",
+                "scaledBy": "1e-15"
+            },
+            "solution": {
+                "params": {},
+                "color_spec": {
+                    "hue": "210",
+                    "saturation": "0.85",
+                    "brightness": "0.65",
+                    "RGB_hex": "0x0000ff"
+                },
+                "ans": "0.0785398163397448",
+                "mks_val": "2.8608265865080877",
+                "ans_source": "tbd",
+                "timestamp": "tbd",
+                "validation_status": "Valid"
+            },
+            "eq_source": "gemst_eq_lib",
+            "version": "202510191241",
+            "condition_satisfied": "True"
+        }
+    },
+    "dx_KE": {
+        "recid": "9",
+        "ans_name": "Distance Kinetic",
+        "ans_symb": "dx_KE",
+        "dependencies": [
+            "m_KE",
+            "C_KE",
+            "D_KE",
+            "dt_KE",
+            "KE"
+        ],
+        "scale_expr": "",
+        "offset_expr": "",
+        "_remark": "For Kinetic values, v=dx/dt<c",
+        "cond_expr": "not is_equiv({C_KE}*{m_KE}*{dt}, 0.0) and ({dx}/{dt}<{c})",
+        "symp_eq": "Eq(dx, (4*Energy*dt_KE*D_KE)/(C_KE*m_KE))",
+        "eq_metadata": {
+            "scaling": {
+                "fact": "3.642517540571808e+16",
+                "scaledBy": "1e-15"
+            },
+            "solution": {
+                "params": {},
+                "color_spec": {
+                    "hue": "210",
+                    "saturation": "0.85",
+                    "brightness": "0.65",
+                    "RGB_hex": "0xff00ff"
+                },
+                "ans": "0.0785398163397448",
+                "mks_val": "2.8608265865080877",
+                "ans_source": "tbd",
+                "timestamp": "tbd",
+                "validation_status": "Valid"
+            },
+            "eq_source": "gemst_eq_lib",
+            "version": "202510191241",
+            "condition_satisfied": "True"
+        }
+    },
+    "dt_KE": {
+        "recid": "10",
+        "ans_name": "Duration Kinetic ",
+        "ans_symb": "dt_KE",
+        "dependencies": [
+            "m_KE",
+            "C_KE",
+            "dx_KE",
+            "D_KE",
+            "KE"
+        ],
+        "scale_expr": "",
+        "offset_expr": "",
+        "cond_expr": "not is_equiv({Energy}*{D_KE}*{dt}), 0.0) and ({dx}/{dt}<{c})",
+        "symp_eq": "Eq(dt, ((m_KE*C_KE*dx_KE)/(4*Energy*D_KE))",
+        "eq_metadata": {
+            "scaling": {
+                "fact": "3.642517540571808e+16",
+                "scaledBy": "1e-15"
+            },
+            "solution": {
+                "params": {},
+                "color_spec": {
+                    "hue": "210",
+                    "saturation": "0.85",
+                    "brightness": "0.65",
+                    "RGB_hex": "0x00ffff"
+                },
+                "ans": "0.0785398163397448",
+                "mks_val": "2.8608265865080877",
+                "ans_source": "tbd",
+                "timestamp": "tbd",
+                "validation_status": "tbd"
+            },
+            "eq_source": "gemst_eq_lib",
+            "version": "202510191241",
+            "condition_satisfied": "True"
+        }
+    },
+    "D_KE": {
+        "recid": "11",
+        "ans_name": "Diameter Kinetic",
+        "ans_symb": "D_KE",
+        "dependencies": [
+            "m_KE",
+            "C_KE",
+            "dx_KE",
+            "dt_KE",
+            "KE"
+        ],
+        "scale_expr": "",
+        "offset_expr": "",
+        "_remark": "For Kinetic Energy v=dx/dt<c",
+        "cond_expr": "not is_equiv({dt_KE}*{Energy}*{dt}, 0.0) and ({dx}/{dt}<{c})",
+        "symp_eq": "Eq(D, ((m_KE*C_KE*dx_KE)/(4*Energy*dt_KE))",
+        "eq_metadata": {
+            "scaling": {
+                "fact": "3.642517540571808e+16",
+                "scaledBy": "1e-15"
+            },
+            "solution": {
+                "params": {},
+                "color_spec": {
+                    "hue": "210",
+                    "saturation": "0.85",
+                    "brightness": "0.65",
+                    "RGB_hex": "0xff0000"
+                },
+                "ans": "0.0785398163397448",
+                "mks_val": "2.8608265865080877",
+                "ans_source": "tbd",
+                "timestamp": "tbd",
+                "validation_status": "tbd"
+            },
+            "eq_source": "gemst_eq_lib",
+            "version": "202510191241",
+            "condition_satisfied": "True"
+        }
+    },
+    "C_KE": {
+        "recid": "12",
+        "ans_name": "Circumference Kinetic",
+        "ans_symb": "C_KE",
+        "dependencies": [
+            "m_KE",
+            "dx_KE",
+            "D_KE",
+            "dt_KE",
+            "KE"
+        ],
+        "scale_expr": "",
+        "offset_expr": "",
+        "_remark": "For Kinetic Energy v=dx/dt<c",
+        "cond_expr": "not is_equiv({m_KE}*{dx_KE}*{dt}, 0.0) and ({dx}/{dt}<{c})",
+        "symp_eq": "Eq(C, (4*Energy*dt_KE*D_KE)/(dx_KE*m_KE))",
+        "eq_metadata": {
+            "scaling": {
+                "fact": "3.642517540571808e+16",
+                "scaledBy": "1e-15"
+            },
+            "solution": {
+                "params": {},
+                "color_spec": {
+                    "hue": "210",
+                    "saturation": "0.85",
+                    "brightness": "0.65",
+                    "RGB_hex": "0x00ff00"
+                },
+                "ans": "0.0785398163397448",
+                "mks_val": "2.8608265865080877",
+                "ans_source": "tbd",
+                "timestamp": "tbd",
+                "validation_status": "tbd"
+            },
+            "eq_source": "gemst_eq_lib",
+            "version": "202510191241",
+            "condition_satisfied": "True"
+        }
+    },
+    "dx": {
+        "recid": "13",
+        "ans_name": "Distance",
+        "ans_symb": "dx",
+        "dependencies": [
+            "dt",
+            "v"
+        ],
+        "cond_expr": "",
+        "_remark": "When Kinetic, use dt=dt_KE; when Relativistic use dt=dt_E",
+        "scale_expr": "{dt_KE} if {v}<{c} else {dt_E}",
+        "offset_expr": "0.0",
+        "symp_eq": "Eq(dx, scale*v)",
+        "eq_metadata": {
+            "scaling": {
+                "fact": "0.1908538063694777",
+                "scaledBy": "1000000000"
+            },
+            "solution": {
+                "params": {
+                    "dt": "1.0",
+                    "v": "1.0"
+                },
+                "color_spec": {
+                    "hue": "210",
+                    "saturation": "0.85",
+                    "brightness": "0.65",
+                    "RGB_hex": "0xff00ff"
+                },
+                "ans": 1.5707963267949,
+                "mks_val": "190853806.36947772",
+                "ans_source": "Eq(dx, dt*v)",
+                "timestamp": "tbd",
+                "validation_status": "Valid"
+            },
+            "eq_source": "gemst_eq_lib",
+            "version": "10/24/2025, 7:50:07 AM",
+            "condition_satisfied": "True"
+        }
+    },
+    "dt": {
+        "recid": "14",
+        "ans_name": "Duration",
+        "ans_symb": "dt",
+        "dependencies": [
+            "dx",
+            "v"
+        ],
+        "scale_expr": "{dx_KE} if {v}<{c} else {dx_E}",
+        "offset_expr": "0.0",
+        "cond_expr": "{v}!=0",
+        "symp_eq": "Eq(dt, scale/v)",
+        "eq_metadata": {
+            "scaling": {
+                "fact": "1.0",
+                "scaledBy": "1.0"
+            },
+            "solution": {
+                "params": {
+                    "v": "1.0",
+                    "dx": "1.00000000000000"
+                },
+                "color_spec": {
+                    "hue": "210",
+                    "saturation": "0.85",
+                    "brightness": "0.65",
+                    "RGB_hex": "0x00ffff"
+                },
+                "ans": 1,
+                "mks_val": "1.0",
+                "ans_source": "Input Data",
+                "timestamp": "tbd",
+                "validation_status": "Needs Validation"
+            },
+            "eq_source": "gemst_eq_lib",
+            "version": "10/14/2025, 7:51:11 AM",
+            "condition_satisfied": "True"
+        }
+    },
+    "v": {
+        "recid": "15",
+        "ans_name": "Velocity",
+        "ans_symb": "v",
+        "dependencies": [
+            "dx",
+            "dt"
+        ],
+        "cond_expr": "not is_equiv({dt}, 0.0)",
+        "symp_eq": "Eq(v, dx/dt)",
+        "eq_metadata": {
+            "scaling": {
+                "fact": "190853806.3694777",
+                "scaledBy": "1.0"
+            },
+            "solution": {
+                "params": {},
+                "color_spec": {
+                    "hue": "210",
+                    "saturation": "0.85",
+                    "brightness": "0.65",
+                    "RGB_hex": "0xffff00"
+                },
+                "ans": 1.5707963267948966,
+                "mks_val": "tbd",
+                "ans_source": "Input Data",
+                "timestamp": "tbd",
+                "validation_status": "Needs Validation"
+            },
+            "eq_source": "gemst_eq_lib",
+            "version": "202510191300",
+            "condition_satisfied": "True"
+        },
+        "scale_expr": "1.0",
+        "offset_expr": "0.0"
+    },
+    "p": {
+        "recid": "16",
+        "ans_name": "Momentum",
+        "ans_symb": "p",
+        "scale_expr": "1.0",
+        "offset_expr": "0.0",
+        "cond_expr": "not is_equiv({dt}, 0.0)",
+        "symp_eq": "Eq(p, m_KE*v)",
+        "dependencies": [
+            "v",
+            "m_KE"
+        ],
+        "eq_metadata": {
+            "scaling": {
+                "fact": "3.642517540571808e+16",
+                "scaledBy": "1e-18"
+            },
+            "solution": {
+                "params": {},
+                "color_spec": {
+                    "hue": "210",
+                    "saturation": "0.85",
+                    "brightness": "0.65",
+                    "RGB_hex": "0x00ff00"
+                },
+                "ans": 1,
+                "mks_val": "tbd",
+                "ans_source": "tbd",
+                "timestamp": "tbd",
+                "validation_status": "tbd"
+            },
+            "eq_source": "gemst_eq_lib",
+            "version": "202510140744",
+            "condition_satisfied": "True"
+        }
+    }
+}

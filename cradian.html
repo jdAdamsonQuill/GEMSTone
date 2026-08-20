@@ -1,0 +1,1564 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cradian Parameter Specification</title>
+    <link rel="stylesheet" type="text/css" href="https://rawgit.com/vitmalina/w2ui/master/dist/w2ui.min.css">
+</head>
+<body>
+
+<div id="main" style="width: 100%; height: 650px;"></div>
+
+<div style="padding: 10px 0px">
+    <button class="w2ui-btn" onclick="import_eq_lib()">Import</button>
+    <button class="w2ui-btn" onclick="openDynVarPopup()">Dynamic Input</button>
+    <button class="w2ui-btn" onclick="export_eq_lib()">Export</button>
+    <button class="w2ui-btn" onclick="update_eq_lib()">Compute</button>
+</div>
+<div style="padding: 10px 0px">
+    <button class="w2ui-btn" onclick="delete_record()">Delete Selected Record</button>
+</div>
+
+<script type="module">
+
+import { w2toolbar, w2field, w2prompt, w2confirm, w2popup, w2ui,w2layout, w2sidebar, w2grid, w2form, w2utils, query } from 'https://rawgit.com/vitmalina/w2ui/master/dist/w2ui.es6.min.js'
+
+//9/28/25 TODO: Fix adding eq's. Allow constants. Allow no value input. 
+
+////////// Globals //////////
+
+////////// Constants - These go first so they can be used in other initializations
+const tbd = "tbd";
+const GUI = "GUI";
+const scaling_default = {"scaledBy":"1.0", "fact":"1.0"};
+const scaling_default_str = JSON.stringify(scaling_default);
+const pstyle = 'border: 1px solid #efefef; padding: 5px'
+
+const dyn_recid = 0;
+const step_recid = 1;
+const step_default = 0.1;
+var step_size = 0.1;
+const dyn_rec_default = { recid: 0, ans_name: "ans_name", ans_val: '0.0', incr: step_size };
+const dyn_field_default = {field: 'ans_val', type: 'float', required: false, 
+                           html: {label: 'Value', attr: 'size="20" maxlength="30"'}, 
+                           options: {arrows: true, autoFormat: true, precision: 6, step: step_size}
+                          };
+
+const record_default = {
+            ans_name: "",
+            ans_symb: "",
+            dependencies_str: "",
+            formula: "",
+            scaling_str: scaling_default_str,
+            scale_expr: "1.0",
+            offset_expr: "0.0",
+            eq_stat: "tbd",
+            stat_bg_color: "lightblue",
+            stat_indicator: 'w2ui:{style:"background-color:'+stat_bg_color+'"}',
+            stat_icon: "fa-regular fa-eye",
+            version: GUI,
+            ans_str: tbd,
+            ans_float: 0.0
+        };
+
+////////// Dictionaries - These go before strings so they can be 'stringify'd..
+var eq_lib = {};
+
+var scaling = scaling_default;
+var this_record = {};
+var params = {};
+var dependencies = [];
+var dynamic_params = {};
+
+////////// Arrays
+var dyn_records = [];
+var dyn_fields = [];
+var selected_params = [];
+
+var this_record = {};
+var recs_fields = {};
+
+////////// Numeric and Boolean
+var first_onchange = true;
+var recid = 0;
+var dyn_input_val = 0.0;
+var mks_val = 0.0;
+var got_data = false;
+
+var ans_float = new w2field('float', { el: query('#us-float')[0], precision: 9 });
+ans_float = 0.0;
+
+////////// Strings
+var recid_str = "0";
+var scaledBy_str = "None";
+var eq_lib_id = "crad_eq_lib";   // For initial load. Import/Export changes id.
+var ans_str = tbd;
+var dyn_input_var = tbd;
+var new_ans_symb = tbd;
+
+var params_str = JSON.stringify(params);
+var dynamic_params_str = JSON.stringify(dynamic_params);
+var eq_lib_str = JSON.stringify(eq_lib);
+
+var ans_name = "";
+var ans_symb = "";
+var scale_expr = "";
+var offset_expr = "";
+var cond_expr = "";
+var eq_stat = "";
+var stat_bg_color = "lightblue";
+var stat_icon = "fa-regular fa-eye";
+var stat_indicator = 'w2ui:{style:"background-color:'+stat_bg_color+'"}';
+var ans_source = "";
+var scaling_str = "";
+var version = "tbd";
+var formula = "";
+var symp_eq = "";
+var eq_source = "";
+var condition_satisfied = "tbd";
+var validation_status = "tbd"
+var validation_timestamp = "tbd"
+var dependencies_str = "";        // init "" because logic checks if empty to decide if commas (,) need appending
+
+////////// widget configurations
+
+// main GUI page
+var config = {
+    layout: {
+        name: 'layout',
+        padding: 4,
+        panels: [
+            { type: 'top', size:30, height:'30px', resizable: true, style: pstyle, html: `Equation Library: ${eq_lib_id}` },
+            { type: 'left', size: '60%', resizable: true, minSize: 500 },
+            { type: 'main', minSize: 500, resizable: true, style: 'overflow: hidden' },
+            { type: 'bottom', size:60, height:'60px', resizable: true, style: pstyle, html: `Dynamic Variables: ${dynamic_params_str}` },
+        ]
+    },
+    grid: {
+        header: 'Parameter Table',
+        name: 'grid',
+        //url: 'http://myquillharp.com/crad_eq_lib.json',
+        show: {
+            selectColumn: true,
+            multiSelect: true,
+            multiple: true,
+            toolbar: true,
+            header: true,
+            toolbarDelete: true,
+            lineNumbers: true
+        },
+        // fa-regular fa-eye for incomplete
+        // fa-regular fa-thumbs-up for valid
+        // fa-regular fa-bell for invalid
+        columns: [
+            { field: 'ans_name', text: 'Variable Name', size: '15%', sortable: true, searchable: true },
+            { field: 'ans_symb', text: 'Symbol', size: '10%', sortable: true, searchable: true },
+            { field: 'eq_stat', text: 'Status', size: '7%', sortable: true, searchable: true },
+            { field: 'ans_str', text: 'Value', size: '20%', sortable: true, searchable: true },
+            { field: 'scaledBy_str', text: 'Scaled By', size: '8%', sortable: true, searchable: true },
+            { field: 'mks_val', text: 'MKS Value', size: '20%', sortable: true, searchable: true }
+        ],
+        records: [],
+        async onSelect(event) {
+            await event.complete;
+            console.log('select', event.detail, this.getSelection());
+
+            if (event.detail != undefined && event.detail.clicked != undefined && event.detail.clicked.recid != undefined) {
+            
+                //console.log(`event.detail.clicked.recid:${event.detail.clicked.recid}`);
+                recid = event.detail.clicked.recid;
+
+                let selected_recids = this.getSelection();
+                if ( selected_recids.length > 0 ) {
+                    //console.log(`selected_recids: ${selected_recids}`);
+
+                    dyn_input_var = get_from_lib( {'recId':selected_recids[0], 'paramId':'ans_name'} );
+                    dyn_input_val = get_from_lib( {'recId':selected_recids[0], 'paramId':'eq_metadata.solution.ans'} );
+                    //console.log(`dyn_input_var ${dyn_input_var} = ${dyn_input_val}`);
+
+                    // Clear it out prior to rebuilding to allow "unclicking" to remove from list
+                    dynamic_params = {};
+
+                    for (let ii = 0; ii < selected_recids.length; ++ii) {
+                        ans_symb = get_from_lib( {'recId':selected_recids[ii], 'paramId':'ans_symb'} );
+                        ans_str = get_from_lib( {'recId':selected_recids[ii], 'paramId':'eq_metadata.solution.ans'} );
+                        ans_float = parseFloat(ans_str);
+                        dynamic_params[ans_symb] = ans_float;
+                    }
+                    form.record = w2utils.extend({}, this.get(recid));
+                    get_data(ans_symb=tbd, recid=recid);
+                    form.refresh();
+
+                    dynamic_params_str = JSON.stringify(dynamic_params);
+                    action('html', 'bottom', `Dynamic Parameters: ${dynamic_params_str}`);
+                }
+            }
+        },
+        onLoad(event) {
+            console.log(event)
+
+            reset_data();
+
+            let data = w2utils.clone(event.detail.data);
+            data.records.forEach((rec, ind) => {
+                rec.recid = 'recid-' + (this.records.length + ind);
+                //console.log("rec.recid: " + rec.recid)
+            })
+            event.detail.data = data;
+
+            action('html', 'bottom', `Dynamic Parameters: ${dynamic_params_str}`);
+        },
+        onClick(event) {
+            console.log(event)
+
+            event.done(() => {
+                let sel = this.getSelection()
+
+                form.recid = sel[0]
+                recid = form.recid;
+
+                form.record = w2utils.extend({}, this.get(sel[0]))
+                get_data(ans_symb=tbd, recid=recid);
+                form.refresh()
+            })
+        }
+    },
+    form: {
+        header: 'Parameter Specification',
+        name: 'param_spec',
+        record: record_default,
+        fields: [
+            { field: 'ans_name', type: 'text', required: true, html: { label: "Parameter Name", attr: 'size="40" maxlength="1000"' } },
+            { field: 'ans_symb', type: 'text', required: true, html: { label: "Symbol", attr: 'size="40" maxlength="1000"' } },
+            { field: 'dependencies_str', type: 'text', required: false, html: { label: "Dependencies", attr: 'size="40" maxlength="1000"' } },
+            { field: 'formula', type: 'text', required: true, html: { label: "Formula", attr: 'size="40" maxlength="1000"' } },
+            { field: 'ans_str', type: 'text', required: false, html: { label: "Value", attr: 'size="40" maxlength="1000"'},
+                options: { arrows: true, autoFormat: true, precision: 6, step: 0.1 } },
+            { field: 'eq_stat', type: 'text', required: false, html: 
+                { label: "Status", attr: 'size="40" maxlength="1000"' }},
+            { field: 'scaling_str', type: 'text', required: false, html: { label: "Scaling", attr: 'size="40" maxlength="1000"' } },
+            { field: 'cond_expr', type: 'text', required: false, html: { label: "Required Conditions", attr: 'size="40" maxlength="1000"' } },
+            { field: 'scale_expr', type: 'text', required: false, html: { label: "Scale Expression", attr: 'size="40" maxlength="1000"' } },
+            { field: 'offset_expr', type: 'text', required: false, html: { label: "Offset Expression", attr: 'size="40" maxlength="1000"' } },
+            { field: 'version', type: 'text', required: false, html: { label: "Version", attr: 'size="40" maxlength="1000"' } }
+        ],
+        onChange: function (event) {
+            console.log(event)
+            //console.log("cur val: " + event.detail.value.current)
+            //console.log("orig val: " + event.detail.value.original)
+            //console.log("prev val: " + event.detail.value.previous)
+
+            let field = event.detail.field;
+            let cur_val = event.detail.value.current;
+            //console.log(`event.detail.field=${field} = ${cur_val}`)
+
+            if (field == "ans_name") {
+                //console.log(`onChange: Setting ans_name to ${cur_val}`);
+                ans_name = cur_val;
+
+            } else if (field == "ans_symb") {
+                if (cur_val != ans_symb) {
+                    new_ans_symb = cur_val;
+                } else {
+                    new_ans_symb = tbd;
+                }
+                ans_symb = new_ans_symb;
+
+            } else if (field == "ans_str") {
+                ans_str = cur_val;
+                try {
+                    ans_float = parseFloat(ans_str);
+                } catch(error) {
+                    w2alert(`Can't convert ${ans_str} to float!`)
+                        .ok(function () {
+                    })
+                    ans_float = 0.0;
+                }
+                //console.log(`onChange() field ans_str, ans_symb:${ans_symb}, ans_str:${ans_str}`);
+
+            } else if (field == "dependencies_str") {
+                //console.log(`field=${field}, cur_val=${cur_val}`);
+                // Parse the string comma-separated list
+                dependencies = [];
+                let rest_of_str = cur_val;
+                while (rest_of_str.length > 0) {
+                    let comma_pos = rest_of_str.indexOf(",");
+                    let symb = rest_of_str;
+                    if (comma_pos > 0) {
+                        symb = rest_of_str.substring(0, comma_pos);
+                        rest_of_str = rest_of_str.substring(comma_pos+1);
+                    } else {
+                        rest_of_str = "";
+                    }
+                    dependencies.append = symb;
+                }
+
+            } else if (field == "scale_expr") {
+                scale_expr = cur_val;
+
+            } else if (field == "offset_expr") {
+                offset_expr = cur_val;
+
+            } else if (field == "cond_expr") {
+                cond_expr = cur_val;
+
+            } else if (field == "ans_str") {
+                ans_str = cur_val;
+
+            } else if (field == "params") {
+                params_str = cur_val;
+
+            } else if (field == "ans_source") {
+                ans_source = cur_val;
+
+            } else if (field == "mks_val") {
+                mks_val = cur_val;
+
+            } else if (field == "scaling_str") {
+                try {
+                    scaling_str = cur_val;
+                    scaling = JSON.parse(scaling_str);
+                    //console.log(`field==scaling_str; scaling_str:${scaling_str}`);
+                    //console.log(`fact:${scaling.fact}, scaledBy:${scaling.scaledBy}`);
+                    scaledBy_str = scaling.scaledBy;
+                } catch(error) {
+                    console.log(`Error parsing scaling input:${scaling_str}`);
+                } 
+
+            } else if (field == "version") {
+                version = cur_val;
+
+            } else if (field == "formula") {
+                formula = cur_val;
+                if (formula == 'const') {
+                    formula = `0+${ans_symb}`
+                }
+                symp_eq = `Eq(${ans_symb}, ${String(formula)})`;
+                //console.log(`Built sympy Eq=${symp_eq}`);
+            }
+        },
+        actions: {
+            Reset() {
+                this.clear();
+                //When a record has been selected, this clears selections so new data can be added not existing overwritten
+                grid.selectNone();
+
+                // Establish the default values
+                reset_data();
+                form.record = w2utils.extend({}, record_default);
+                
+                this.refresh();
+            },
+            custom: {
+                text: 'Details',
+                class: 'w2ui-btn-green',
+                onClick(event) {
+
+                    let details_str = build_details_str(ans_symb)
+
+                    w2popup.open({
+                        title: `${ans_name} Details`,
+                        width: 500,
+                        height: 300,
+                        resizable: true,
+                        text: details_str
+                    })
+                }
+            },
+            Save() {
+                let errors = this.validate()
+                //console.log(`Save() number of error=${errors.length}`)
+                if (errors.length > 0) return
+
+                //jda Example checks recid==0 but when nothing selected we get null, not 0..
+                if (this.recid == 0 || this.recid == null) {
+                    recid += 1;
+                    //console.log(`Save() saving new record ${recid}`);
+                    grid.add(w2utils.extend(this.record, { recid: grid.records.length + 1 }))
+                    //grid.selectNone()
+                } else {
+                    recid = this.recid
+                    //console.log("Save() updating this.recid: " + this.recid)
+
+                    // TODO: This fails I think with multi-selection when updating values in the form
+                    grid.set(this.recid, this.record)
+                    //grid.set(this.recid, this_record)
+                    //grid.selectNone()
+                }
+
+                // Build the eq_lib json spec for this equation parameter
+                //console.log("Save() recid: " + recid + ", num records: " + grid.records.length)
+
+                if (new_ans_symb != tbd && new_ans_symb != "") {
+                    ans_symb = new_ans_symb;
+                    console.log(`got new symbol:${ans_symb} with recid:${recid}`);
+                }
+
+                //console.log(`calling set_data(ans_symb=${ans_symb}`);
+                save_data(recid=>recid);
+                update_dynamic_param_vals();
+
+                get_data(ans_symb=>ans_symb);
+
+            }
+        }
+    }
+}
+
+// dynamic variable popup spec
+var dyn_config = {
+    layout: {
+        name: 'dyn_layout',
+        padding: 4,
+        panels: [
+            { type: 'left', size: '50%', resizable: true },
+            { type: 'main', minSize: 250, resizable: true, style: 'overflow: hidden' }
+        ]
+    },
+    grid: {
+        name: 'dyn_grid',
+        header: 'Dynamic Parameters',
+        style: 'border: 1px solid #efefef',
+        show: {
+            //selectColumn: true,
+            //multiSelect: true,
+            //multiple: true,
+            //toolbar: true,
+            header: true,
+            //toolbarDelete: true,
+            //lineNumbers: true
+        },
+        columns: [
+            { field: 'ans_name', text: 'Variable Name', size: '100px', render: 'Variable' },
+            { field: 'ans_val', text: 'Value', size: '100px', render: 'Value' },
+            { field: 'incr', text: 'Increment', size: '100px', render: step_size}
+        ],
+        records: dyn_records,
+        onLoad(event) {
+            console.log(event)
+
+            let data = w2utils.clone(event.detail.data);
+            data.records.forEach((rec, ind) => {
+                rec.recid = 'recid-' + (this.records.length + ind);
+                //console.log("rec.recid: " + rec.recid)
+            })
+            event.detail.data = data;
+        },
+        async onClick(event) {
+            await event.complete                     // needs to wait for event complete cycle, so selection is right
+
+            dyn_fields[dyn_recid].options.step = step_size
+            dyn_fields[step_recid].options.step = step_size
+            
+            //console.log(`dyn_grid onChange: dynamic_params[param_sym=${param_symb}], Setting to ${cur_val}`);
+            //dynamic_params[param_symb] = cur_val;
+
+            let sel = dyn_grid.getSelection()
+
+            //console.log(`onClick dyn: sel.length:${sel.length}, content:\n${JSON.stringify(sel)}`);
+            
+            if (sel.length == 1) {
+                //console.log(`onClick dyn: setting dyn_form.recid:${sel[0]}`);
+                dyn_form.recid  = sel[0];
+                dyn_form.record = w2utils.clone(dyn_grid.get(sel[0]));
+                //console.log(`onClick dyn: dyn_form.record:${JSON.stringify(dyn_form.record)}`);
+                dyn_form.refresh();
+            } else if (sel.length < 1) {
+                dyn_form.clear();
+            } else {
+                //console.log(`dyn_config got ${sel.length} selections`);
+            }
+        }
+    },
+    form: {
+        header: 'Dynamic Input',
+        name: 'dyn_form',
+        style: 'border: 1px solid #efefef',
+        fields: dyn_fields,
+        record: dyn_field_default,
+        onChange: function (event) {
+            console.log(event)
+
+            let cur_name = event.detail.field;
+            let orig_val = event.detail.value.current;
+            let cur_val = orig_val;
+            //console.log(`dyn_form onChange: cur_val:${cur_val}, cur_name:${cur_name}`);
+
+            if (cur_name == 'incr' ) {
+                step_size = cur_val;
+                dyn_fields[0].options.step = step_size;
+                dyn_fields[1].options.step = step_size;
+                dyn_config.form.fields = dyn_fields;
+                form.record = w2utils.extend({}, dyn_fields[0]);
+                form.record = w2utils.extend({}, dyn_fields[1]);
+
+                form.record = w2utils.extend({}, this.get(recid));
+
+                this.record.incr = step_size
+                dyn_grid.set(this.recid, this.record)
+
+                form.refresh()
+
+            } else {
+
+                let param_symb = this.record.ans_name;
+                let cur_step = dyn_fields[dyn_recid].options.step;
+
+                // Changing the step_size is not changing the arrow default after the form is displayed.
+                // Since we have to handle step_size ('incr') manually, figure out if it's up arrow or down
+                if ( orig_val - cur_val > 0.0 ) {
+                    step_size = -cur_step;
+                    step_size += step_default;  // Back out the "auto-increment" it's not letting me change (options.step)
+                } else {
+                    step_size = cur_step;
+                    step_size -= step_default;  // Back out the "auto-increment" it's not letting me change (options.step)
+                }
+                // Subtract out the default_step size of 0.1
+                cur_val += step_size;
+
+                console.log(`updated ${param_symb} by ${step_size} to ${cur_val}`);
+
+                // maybe..
+                this.record.field = cur_val;
+                form.record = w2utils.extend({}, this.get(recid));
+
+                dynamic_params[param_symb] = cur_val;
+                dynamic_params_str = JSON.stringify(dynamic_params);
+
+                // Send as early as possible to minimize delay
+                console.log(`Sending these dynamic_params for cmd compute_all:${dynamic_params_str}`);
+                //socket.send('compute_all='+dynamic_params_str );
+                socket.send('update='+dynamic_params_str );
+
+                //console.log(`dyn onChange, cur_name:${cur_name}, param_symb=${param_symb}`);
+
+                this.record.ans_val = cur_val;
+                dyn_grid.set(this.recid, this.record);
+
+
+                action('html', 'bottom', `Dynamic Parameters: ${dynamic_params_str}`);
+
+                // Update eq_lib value
+                set_in_lib( {'symb':param_symb, 'paramId':'eq_metadata.solution.ans', 'paramVal':cur_val} );
+
+                let lib_recid = get_from_lib( {'symb':param_symb, 'paramId':'recid'} );
+                
+                // Set all the global parameters from the eq_lib. These fill this_record
+                get_data(ans_symb=>param_symb);
+
+                this_record = { recid: lib_recid, ans_name: ans_name, ans_symb: ans_symb, 
+                    ans_str: ans_str, mks_val: mks_val, 
+                    scale_expr: scale_expr, offset_expr: offset_expr, cond_expr: cond_expr,
+                    eq_stat: validation_status, scaling_str: scaling_str, scaledBy_str: scaledBy_str, version: version, 
+                    formula: formula, dependencies_str:dependencies_str, w2ui:{style:{eq_stat: "background: lightblue;"}} };
+
+                grid.set(lib_recid, this_record)
+
+                dyn_form.refresh();
+                form.refresh();
+            }
+        },
+        actions: {
+            Reset() {
+                this.clear()
+                dyn_grid.selectNone();
+                dyn_form.record = w2utils.extend({}, dyn_field_default);
+                this.refresh();
+            }
+        }
+    }
+}
+
+// Initialize the dyn_config variables for Dynamic Input
+recs_fields = init_dyn_config();
+dyn_config.grid.records = recs_fields.dyn_records;
+dyn_config.form.fields = recs_fields.dyn_fields;
+
+// Main GUI display
+var layout = new w2layout(config.layout)
+var grid = new w2grid(config.grid)
+var form = new w2form(config.form)
+
+// Dynamic Input popup
+var dyn_layout = new w2layout(dyn_config.layout)
+var dyn_grid = new w2grid(dyn_config.grid)
+var dyn_form = new w2form(dyn_config.form)
+               
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+////////// functions
+
+function send_export_cmd(eq_lib_id) {
+    let cmd = `export_eq_lib=${eq_lib_id}`;
+    console.log(`crad.html export_eq_lib() socket.send('${cmd}'`);
+    socket.send(cmd);
+}
+
+function send_eq_lib_str() {
+    let eq_lib_json_str = tbd;
+    //debug
+    try {
+        let dx_scaling = eq_lib["dx"]["eq_metadata"]["scaling"];
+        let fact = dx_scaling.fact;
+        let scaledBy = dx_scaling.scaledBy;
+        //console.log(`send_eq_lib_str() dx_scaling:${dx_scaling}, fact=${fact}, scaledBy=${scaledBy}`);
+    } catch(error) {
+        console.log("send_eq_lib_str() error caught on scaling for dx");
+    }
+
+    try {
+        eq_lib_json_str = JSON.stringify(eq_lib);
+    } catch(error) {
+        console.log("crad.html send_eq_lib_str() ERROR on JSON.stringify on eq_lib " + error.message);
+        return;
+    }
+    console.log("crad.html send_eq_lib_str() sending updated eq_lib");
+    socket.send('eq_lib='+eq_lib_json_str);
+}
+
+window.action = function(method, param1, param2, param3) {
+    layout[method](param1, param2, param3);
+}
+
+window.export_eq_lib = function() {
+
+    w2prompt({
+        title: w2utils.lang('Equation Library ID'),
+        width: 300,
+        height: 200,
+        label: 'Equation Library ID',
+        value: eq_lib_id,
+        attrs: 'style="width: 200px" placeholder="Type here..."',
+        btn_ok: {
+            text: 'Ok',
+            class: 'ok-class',
+            style: 'color: green'
+        },
+        btn_cancel: {
+            text: 'Cancel',
+            class: 'ok-class'
+        },
+    })
+    .change((event) => {
+        console.log('export popup change', event.detail.originalEvent.target.value)
+    })
+    .ok((event) => {
+        console.log('export popup ok, value=', event.detail.value)
+
+        eq_lib_id = event.detail.value
+
+        // First update the eq_lib data in the server..
+        send_eq_lib_str();
+
+        // Then have it save the updated data per the lib_id
+        send_export_cmd(eq_lib_id);
+
+        action('html', 'top', `<center>Equation Library: ${eq_lib_id}</center>`);
+
+    })
+    .cancel((event) => {
+        console.log('cancel')
+    })
+}
+
+window.delete_record = function() {
+
+    w2confirm('Are you sure?', function btn(answer) {
+        //console.log(answer); // Yes or No -- case-sensitive
+        if (answer == "No") return;
+    })
+
+    console.log(`Deleting selected record #${form.recid} out of ${grid.records.length} records`);
+    grid.delete(form.recid);
+    recid -= 1;
+    recid_str = String(recid);
+    //console.log(`Remaining are ${grid.records.length} records`);
+    form.clear();
+
+    let done = false;
+
+    // Delete the matching entry in the equation library
+    for (const [eq, eq_spec] of Object.entries(eq_lib)) {
+        //console.log(`processing eq ${eq}`);
+        for (const [entry, entry_val] of Object.entries(eq_spec)) {
+            //console.log(`entry:${entry}, entry_val:${entry_val}, form.recid=${recid}`);
+            if (entry == "recid" && entry_val == recid) {
+                console.log(`Deleting eq_lib[${eq}]`);
+                delete eq_lib[eq];
+                done = true;
+                break;
+            }
+        }
+        if (done) break;
+    }
+
+    // 10/3/25
+    dynamic_params = {};
+    dynamic_params_str = JSON.stringify(dynamic_params);
+    action('html', 'bottom', `Dynamic Parameters: ${dynamic_params_str}`);
+
+}
+
+window.import_eq_lib = function() {
+    //console.log("import_eq_lib() Start")
+
+    w2prompt({
+        title: w2utils.lang('Equation Library To Import'),
+        width: 300,
+        height: 150,
+        label: 'Equation Library To Import?',
+        value: eq_lib_id,
+        attrs: 'style="width: 200px" placeholder="Type here..."',
+        btn_ok: {
+            text: 'Ok',
+            class: 'ok-class',
+            style: 'color: green'
+        },
+        btn_cancel: {
+            text: 'Cancel',
+            class: 'ok-class'
+        },
+    })
+    .change((event) => {
+        console.log('import_eq_lib popup change', event.detail.originalEvent.target.value)
+    })
+    .ok((event) => {
+        console.log('import_eq_lib popup ok, value=', event.detail.value)
+
+        eq_lib_id = event.detail.value;
+        action('html', 'top', `<center>Equation Library: ${eq_lib_id}</center>`);
+
+        let cmd = `import_eq_lib=${eq_lib_id}`;
+        console.log(`crad.html import_eq_lib() socket.send('${cmd}'`);
+        socket.send(cmd);
+        
+        // Establish the default values
+        form.clear();
+        reset_data();
+        form.record = w2utils.extend({}, record_default);
+
+        dynamic_params = {};
+        dynamic_params_str = JSON.stringify(dynamic_params);
+        action('html', 'bottom', `Dynamic Parameters: ${dynamic_params_str}`);
+    
+    })
+    .cancel((event) => {
+        console.log('cancel')
+    })
+
+}
+
+window.update_eq_lib = function() {
+    //console.log("update_eq_lib() Start");
+
+    console.log(`Sending these dynamic_params for cmd update:${dynamic_params_str}`);
+    socket.send('update='+dynamic_params_str );
+
+    form.clear();
+    form.record = w2utils.extend({}, record_default);
+
+    action('html', 'top', `<center>Waiting to receive computed data...</center>`);
+}
+
+action('html', 'top', `<center>Equation Library: ${eq_lib_id}</center>`);
+
+layout.render('#main')
+layout.html('left', grid)
+layout.html('main', form)
+
+/////////// Websocket Setup ////////////////////////////////
+console.log("creating new WEbSocket localhost:8765")
+const socket = new WebSocket('ws://localhost:8765/socket');
+
+socket.onopen = (event) => {
+  console.log('WebSocket onopen connection opened:', event);
+  socket.send('option=crad_ws');
+  action('html', 'top', `<center>Contacted the server; waiting for data...</center>`);
+};
+
+socket.onmessage = (event) => {
+  //console.log('WebSocket onmessage Message from server:', event.data);
+  action('html', 'top', `<center>Processing incoming data...</center>`);
+  proc_ws_data(event.data)
+};
+
+socket.onclose = (event) => {
+  console.log('WebSocket onclose connection closed:', event);
+  action('html', 'top', `<center>Sorry, the required server isn't running!</center>`);
+};
+
+socket.onerror = (error) => {
+  console.error('WebSocket error:', error);
+  action('html', 'top', `<center>Sorry, the required server isn't running!</center>`);
+};
+
+function log_dict( dict, dict_name="tbd" ) {
+    if (dict == undefined) {
+        console.log(`log_dict() supplied dictionary is undefined. Nothing to display.`);
+        return;
+    }
+    if (dict.length < 1) {
+        console.log(`log_dict() supplied dictionary has length ${dict.length}. Nothing to display.`);
+        return;
+    }
+
+    for ( const [param_name, param] of Object.entries(dict) ) {
+        if ( String(param) == "[object Object]" ) {
+            log_dict( w2utils.clone( param ), `${param_name}.` );
+        }
+        console.log(`log_dict(): ${dict_name}.${param_name}=${param}`); 
+    }
+}
+
+////////// functions ///////////////////
+
+function get_ans( ans_symb ) {
+    return eq_lib[ans_symb]["eq_metadata"]["solution"]["ans"];
+}
+
+function build_depends( dependencies ) {
+    //console.log(`build_depends() got dependencies:${dependencies}`);
+    let dependencies_str = "";
+    for ( let ii=0; ii<dependencies.length; ++ii ) {
+        let depend_name = dependencies[ii];
+        if (depend_name == tbd || depend_name == "") continue;
+        if (dependencies_str != "") {
+            dependencies_str += ", ";
+        }
+        dependencies_str += depend_name;
+    }
+    if (dependencies_str.length == 0) dependencies_str = tbd;
+    //console.log(`build_depends() set dependencies_str:${dependencies_str}`);
+    return dependencies_str;
+}
+// Use either symb or recId, not both. Example paramId: 'eq_metadata.solution.ans'
+function set_in_lib( inRec={'lib':'default', 'symb':'tbd', 'recId':'tbd', 'paramId':'tbd', 'paramVal':'tbd'} ) {
+    let lib = inRec.lib;
+    let symb = inRec.symb;
+    let recId = inRec.recId;
+    let paramId = inRec.paramId;
+    let paramVal = inRec.paramVal;
+    //console.log(`set_in_lib(lib=${lib}, symb=${symb}, recId=${recId}, paramId=${paramId}`);
+
+    if ( (symb == undefined && recId == undefined) || (symb != undefined && recId != undefined )) {
+        console.log(`set_in_lib() Input error. Either symb (${symb}) or recId (${recId}) must be specified; not both or neither.`);
+        return;
+    }
+    if (lib == undefined || lib == 'default') lib = eq_lib;
+
+    let key = 'recid';
+    let key_val = recId;
+    if ( symb != undefined ) {
+        key = 'ans_symb';
+        key_val = symb;
+    }
+
+    for (const [eq, eq_spec] of Object.entries(lib)) {
+        //console.log(`eq:${eq}, key:${key}, key_val:${key_val}`);
+
+        if (eq_spec[key] != key_val) continue;
+        
+        let dict_entry = "eq_spec."+paramId;
+        //console.log(`dict_entry: ${dict_entry}`);
+
+        eval(dict_entry +` = ${paramVal}`);
+        console.log( `set_in_lib() set ${eq}:${dict_entry} = ${paramVal}`);
+        break;
+    }
+    form.refresh()
+}
+
+// Use either symb or recId, not both. Example paramId: 'eq_metadata.solution.ans'
+function get_from_lib( inRec={'lib':'default', 'symb':'tbd', 'recId':'tbd', 'paramId':'tbd'} ) {
+    let lib = inRec.lib;
+    let symb = inRec.symb;
+    let recId = inRec.recId;
+    let paramId = inRec.paramId;
+    //console.log(`get_from_lib(lib=${lib}, symb=${symb}, recId=${recId}, paramId=${paramId}`);
+
+    if ( (symb == undefined && recId == undefined) || (symb != undefined && recId != undefined )) {
+        console.log(`get_from_lib() Input error. Either symb (${symb}) or recId (${recId}) must be specified; not both or neither.`);
+        return tbd;
+    }
+    if (lib == undefined || lib == 'default') lib = eq_lib;
+
+    let key = 'recid';
+    let key_val = recId;
+    if ( symb != undefined ) {
+        key = 'ans_symb';
+        key_val = symb;
+    }
+
+    for (const [eq, eq_spec] of Object.entries(lib)) {
+        //console.log(`eq:${eq}, key:${key}, key_val:${key_val}`);
+
+        if (eq_spec[key] != key_val) continue;
+        
+        let dict_entry = "eq_spec."+paramId;
+        //console.log(`dict_entry: ${dict_entry}`);
+
+        let paramVal = eval(dict_entry);
+        //console.log( `paramVal: ${paramVal}`);
+
+        return( paramVal );
+    }
+}
+function get_via_symb(symb='tbd', paramId='tbd') {
+    //console.log(`get_via_symb(symb=${recId}, paramId=${paramId}`);
+
+    if (symb == tbd) {
+        console.log(`get_via_symb() - symb is required! You get 'tbd'`);
+        return tbd;
+    }
+    if (paramId == tbd) {
+        console.log(`get_via_symb() - Must specify a paramId whose value you want! You get 'tbd'`);
+        return tbd;
+    }
+     
+    for (const [eq, eq_spec] of Object.entries(eq_lib)) {
+        if (eq_spec['ans_symb'] != symb) continue;
+        let dict_entry = "eq_spec."+paramId;
+        //console.log(`dict_entry: ${dict_entry}`);
+        let paramVal = eval(dict_entry);
+        //console.log( `paramVal: ${paramVal}`);
+        return( paramVal );
+    }
+}
+function get_via_recid(recId='tbd', paramId='tbd') {
+    console.log(`get_via_recid(recId=${recId}, paramId=${paramId}`);
+
+    if (recId == tbd) {
+        console.log(`get_via_recid() - recId is required! You get 'tbd'`);
+        return tbd;
+    }
+    if (paramId == tbd) {
+        console.log(`get_via_recid() - Must specify a paramId whose value you want! You get 'tbd'`);
+        return tbd;
+    }
+     
+    for (const [eq, eq_spec] of Object.entries(eq_lib)) {
+        if (eq_spec['recid'] != String(recId)) continue;
+        let symb = eq_spec['ans_symb'];
+        let dict_entry = "eq_spec."+paramId;
+        //console.log(`dict_entry: ${dict_entry}`);
+        let paramVal = eval(dict_entry);
+        //console.log( `paramVal: ${paramVal}`);
+        return( paramVal );
+    }
+}
+
+function get_data( symb_or_recid={"key":"symb", "val":"tbd"} ) {
+
+    let key = symb_or_recid.key;
+    let val = symb_or_recid.val;
+    let rec_symb = tbd
+    let recid = tbd
+
+    if (key == "recid") {
+        recid = val
+        for (const [eq, eq_spec] of Object.entries(eq_lib)) {
+            console.log(`save_data processing eq_lib. eq:${eq}, eq_spec['recid']=${eq_spec['recid']}`);
+            if (eq_spec['recid'] != String(recid)) continue;
+
+            console.log(`save_data found eq_lib with recid:${recid} has symb:${eq_spec['ans_symb']}`);
+            rec_symb = eq_spec['ans_symb'];
+            break;
+        }
+    } else if (key == "symb") {
+        rec_symb = val;
+    }
+
+    if (rec_symb == tbd) {
+        console.log(`get_data() couldn't find a record with recid=${recid}, or rec_symb=${rec_symb}`);
+        return;
+    }
+
+    let recid_str = tbd
+    try {
+        ans_name = eq_lib[rec_symb]["ans_name"];
+        ans_symb = eq_lib[rec_symb]["ans_symb"];
+        recid_str = eq_lib[rec_symb]["recid"];
+    } catch(error) {
+        console.log(`Error: ans_name:${ans_name} with ans_symb:${ans_symb} has recid_str:${recid_str}`);
+        return -1
+    }
+
+    scale_expr = eq_lib[rec_symb]["scale_expr"];
+    offset_expr = eq_lib[rec_symb]["offset_expr"];
+    cond_expr = eq_lib[rec_symb]["cond_expr"];
+
+    symp_eq = eq_lib[rec_symb]["symp_eq"];
+    let comma_pos = symp_eq.indexOf(',');
+    formula = symp_eq.substring(comma_pos+1, symp_eq.length-1);
+    //console.log(`get_data() build formula=${formula} from symp_eq:${symp_eq}`);
+
+    dependencies = eq_lib[rec_symb]["dependencies"];
+    dependencies_str = build_depends(dependencies);
+    //console.log(`get_data() dependencies_str:'${dependencies_str}'`);
+    
+    version = eq_lib[rec_symb]["eq_metadata"]["version"];
+    eq_source = eq_lib[rec_symb]["eq_metadata"]["eq_source"];
+    condition_satisfied = eq_lib[rec_symb]["eq_metadata"]["condition_satisfied"];
+    scaling = eq_lib[rec_symb]["eq_metadata"]["scaling"];
+    scaling_str = JSON.stringify(scaling);
+    
+    ans_str = eq_lib[rec_symb]["eq_metadata"]["solution"]["ans"];
+    try {
+        ans_float = parseFloat(ans_str);
+    } catch(error) {
+        ans_str = tbd;
+        ans_float = 0.0;
+    }
+    mks_val = eq_lib[rec_symb]["eq_metadata"]["solution"]["mks_val"];
+    params = eq_lib[rec_symb]["eq_metadata"]["solution"]["params"];
+    params_str = JSON.stringify(params);
+    ans_source = eq_lib[rec_symb]["eq_metadata"]["solution"]["ans_source"];
+    validation_status = eq_lib[rec_symb]["eq_metadata"]["solution"]["validation_status"];
+    validation_timestamp = eq_lib[rec_symb]["eq_metadata"]["solution"]["validation_timestamp"];
+}
+
+function save_data( symb_or_recid={"key":"symb", "val":"tbd"} ) {
+
+    let key = symb_or_recid.key;
+    let val = symb_or_recid.val;
+    let rec_symb = tbd
+    let recid = tbd
+
+    if (key == "recid") {
+        recid = val
+        for (const [eq, eq_spec] of Object.entries(eq_lib)) {
+            console.log(`save_data processing eq_lib. eq:${eq}, eq_spec['recid']=${eq_spec['recid']}`);
+            if (eq_spec['recid'] != String(recid)) continue;
+
+            console.log(`save_data found eq_lib with recid:${recid} has symb:${eq_spec['symb']}`);
+            rec_symb = eq_spec['ans_symb'];
+            break;
+        }
+    } else if (key == "symb") {
+        rec_symb = val;
+    }
+
+    if (rec_symb == tbd) {
+        console.log(`save_data() got Invalid record symbol=${rec_symb}; doing nothing`);
+        return -1;
+    }
+
+    let eq_metadata = {};
+    eq_metadata['scaling'] = {};
+
+    let solution = {};
+    solution["params"] = params;
+    eq_metadata['solution'] = solution;
+    eq_metadata['scaling'] = scaling;
+
+    let found_symb = false;
+    for (const [eq, eq_spec] of Object.entries(eq_lib)) {
+        if (eq == rec_symb) {
+            found_symb = true;
+            break;
+        }
+    }
+    if (!found_symb) {
+        console.log(`save_data() record's '${rec_symb}' is new. Preparing new equation library entry`);
+        eq_lib[rec_symb] = {};
+        eq_lib[rec_symb]['recid'] = String(eq_lib.length+1);
+        eq_lib[rec_symb]["ans_symb"] = rec_symb;
+        eq_lib[rec_symb]['eq_metadata'] = {};
+        eq_lib[rec_symb]['eq_metadata']['scaling'] = scaling;
+        eq_lib[rec_symb]['eq_metadata']['solution'] = {};
+        eq_lib[rec_symb]['eq_metadata']['solution']['params'] = {};
+    }
+
+    //console.log(`save_data() recid:${recid}`);
+    eq_lib[rec_symb]["recid"] = String(recid);
+    eq_lib[rec_symb]["ans_name"] = ans_name;
+    eq_lib[rec_symb]["ans_symb"] = rec_symb;
+    eq_lib[rec_symb]["scale_expr"] = scale_expr;
+    eq_lib[rec_symb]["offset_expr"] = offset_expr;
+    eq_lib[rec_symb]["cond_expr"] = cond_expr;
+    eq_lib[rec_symb]["symp_eq"] = symp_eq;
+    eq_lib[rec_symb]["dependencies"] = dependencies;
+
+    eq_metadata["eq_source"] = eq_source;
+    if ( version == tbd ) {
+        let curDate = new Date();
+        version = curDate.toLocaleString();    
+    }
+    eq_metadata["version"] = version;
+    eq_metadata["condition_satisfied"] = condition_satisfied;
+
+    solution["ans"] = ans_str;
+    solution["mks_val"] = String(mks_val);
+    solution["ans_source"] = ans_source;
+    solution["validation_status"] = validation_status;
+    solution["validation_timestamp"] = validation_timestamp;
+
+    eq_metadata["solution"] = solution;
+    eq_lib[rec_symb]["eq_metadata"] = eq_metadata;
+
+    //console.log(`save_data() updated eq_lib[${rec_symb}]...ans to:${eq_lib[ans_symb]["eq_metadata"]["solution"]["ans"]}`);
+}
+
+function reset_data( init_val="tbd" ) {
+    //console.log(`reset_data(init_val=${init_val})`);
+
+    ans_name = "";
+    ans_symb = "";
+    scale_expr = "1.0";
+    offset_expr = "0.0";
+    cond_expr = "";
+    ans_str = tbd;
+    ans_float = 0.0;
+    eq_stat = "invalid";
+    stat_icon = "fa-regular fa-eye";
+    stat_bg_color = "lightblue";
+    ans_source = "GUI";
+    mks_val = init_val;
+    scaling = scaling_default;
+    scaling_str = scaling_default_str;
+    scaledBy_str = "None";
+    version = init_val;
+    formula = init_val;
+    dependencies = [];
+    dependencies_str = "";
+    this_record = {};
+    params = {};
+    selected_params = [];
+    params_str = "";
+    got_data = false;
+}
+reset_data();
+
+function build_details_str(ans_symb) {
+    //console.log(`build_details_str(${ans_symb}) Starting`);
+
+    let details_str = "";
+    for (const [eq, eq_spec] of Object.entries(eq_lib)) {
+
+        if (ans_symb != eq) continue;
+
+        //console.log(`building details for eq:${eq}`);
+
+        //console.log(`details: processing eq ${eq} eq_spec:${eq_spec}`);
+
+        //console.log(`details: version:${eq_spec['eq_metadata']['version']}`);
+        //console.log(`details: eq source:${eq_spec['eq_metadata']['eq_source']}`);
+        //console.log(`details: cond satisfied:${eq_spec['eq_metadata']['condition_satisfied']}`);
+        //console.log(`details: ans source:${eq_spec['eq_metadata']['solution']['ans_source']}`);
+        //console.log(`details: validation stat:${eq_spec['eq_metadata']['solution']['validation_status']}`);
+        //console.log(`details: timestamp:${eq_spec['eq_metadata']['solution']['validation_timestamp']}`);
+
+        details_str += `Version: ${eq_spec['eq_metadata']['version']}`;
+        details_str += `<br>Equation Source: ${eq_spec['eq_metadata']['eq_source']}`;
+        details_str += `<br>Condition Satisfied: ${eq_spec['eq_metadata']['condition_satisfied']}`;
+        details_str += `<br>Ans Source: ${eq_spec['eq_metadata']['solution']['ans_source']}`;
+        details_str += `<br>Validation Status: ${eq_spec['eq_metadata']['solution']['validation_status']}`;
+        details_str += `<br>Validation Timestamp: ${eq_spec['eq_metadata']['solution']['validation_timestamp']}`;
+        details_str += `<br>Parameters Utilized:<br>${JSON.stringify(params)}`;
+
+        break;
+    }
+    return details_str;
+}
+
+function proc_ws_data(data) {
+
+    let eq_sign_pos = data.indexOf('=');
+    if (eq_sign_pos < 0 ) {
+        if (data == "crad_ws") {
+            if (!got_data) { 
+                let cmd = `import_eq_lib=${eq_lib_id}`;
+                console.log(`crad.html proc_ws_data(): Importing lib on initialization; socket.send('${cmd}'`);
+                socket.send(cmd);
+                got_data = true;
+            }
+        }
+        return;
+    }
+
+    let option = data.substring(0, eq_sign_pos);
+    //console.log("proc_ws_data() option: " + option) 
+
+    // format: params={"p1":"v1", "p2":"v2", ...}
+    if ( option == 'params') {
+
+        let rcvd_params = data.substring(eq_sign_pos+1)
+        console.log(`got option 'params'; rcvd_params:${rcvd_params}`);
+
+        params = JSON.parse(rcvd_params);
+
+        //log_dict(params, "params");
+
+        // Display these new values
+        for (const [param_symb, param_val] of Object.entries(params)) {
+            set_in_lib( {'symb':param_symb, 'paramId':'eq_metadata.solution.ans', 'paramVal':param_val} );
+            get_data(ans_symb=param_symb);
+            
+            recid = get_from_lib( {'symb':param_symb, 'paramId':'recid'} );
+            //console.log(`got from lib recid=${recid}`);
+                    
+            //console.log("received params. building this_record");
+
+            this_record = { recid: recid, ans_name: ans_name, ans_symb: ans_symb, 
+                            ans_str: ans_str, mks_val: mks_val, 
+                            scale_expr: scale_expr, offset_expr: offset_expr, cond_expr: cond_expr,
+                            eq_stat: validation_status, scaling_str: scaling_str, scaledBy_str: scaledBy_str, version: version, 
+                            formula: formula, dependencies_str:dependencies_str, w2ui:{style:{eq_stat: "background: lightblue;"}} };
+
+            //console.log("this_record: " + this_record);
+
+            grid.set(recid, this_record)
+
+            //TODO: This has 'c' and 'scale' which shouldn't be in there..
+            //dynamic_params = params;
+
+            // Update the dynamic parameter values if needed
+            update_dynamic_param_vals();
+            //for ( const [symb, val] of Object.entries(dynamic_params)) {
+            //    ans_str = get_from_lib( {'symb':symb, 'paramId':'eq_metadata.solution.ans'} );
+            //    ans_float = parseFloat(ans_str);
+            //    dynamic_params[symb] = ans_float;
+            //}
+
+            dynamic_params_str = JSON.stringify(dynamic_params);
+            action('html', 'bottom', `Dynamic Parameters: ${dynamic_params_str}`);
+        }
+
+        action('html', 'top', `<center>Equation Library: ${eq_lib_id}</center>`);
+
+        reset_data();
+
+        grid.selectNone();
+        form.refresh();
+
+    } else if ( option == 'eq_lib') {
+        eq_lib_str = data.substring(eq_sign_pos+1)
+        //console.log("proc_ws_data() eq_lib_str follows:")
+        //console.log(eq_lib_str)
+
+        // Clear out the old stuff; just show what we get from the server
+        //console.log(`Clearing the eq_lib and grid records`);
+        eq_lib = {};
+        grid.clear();
+
+        try {
+            eq_lib = JSON.parse(eq_lib_str);
+        } catch(error) {
+            console.log(`proc_ws_data() Error from JSON.parse building eq_lib from ${eq_lib_str}:\n${error}`)
+        }
+        //console.log(`proc_ws_data() Successfully parsed eq_lib_str into eq_lib`);
+
+        recid = 0;
+
+        // Process the incoming equation library
+        for (const [eq, eq_spec] of Object.entries(eq_lib)) {
+            //console.log(`proc_ws_data() eq: ${eq}, eq_spec: ${eq_spec}`);
+
+            reset_data();
+
+            recid += 1;
+
+            // 9/28/25 We don't need to loop over all params; we can just extract.. As long as Everything is there and extracts ok..
+
+            let eq_metadata = {};
+            let eq_solution = {};
+
+            dependencies = [];
+            params = {};
+
+            // In case of missing elements or other errors, annunciate and continue
+            // This way we ensure we get what we expect, not just what's there, or know about what's missing
+            let done = false;
+            let next_param = 'recid_str';
+            while (!done) {
+                try {
+                    switch (next_param) {
+                        case 'recid_str':
+                            next_param = 'ans_name';
+                            recid_str = eq_spec['recid'];
+                        case 'ans_name':
+                            next_param = 'ans_symb';
+                            ans_name = eq_spec['ans_name'];
+                        case 'ans_symb':
+                            next_param = 'dependencies';
+                            ans_symb = eq_spec['ans_symb'];
+                        case 'dependencies':
+                            next_param = 'scale_expr';
+                            dependencies = eq_spec['dependencies'];
+                            dependencies_str = build_depends(dependencies);
+                        case 'scale_expr':
+                            next_param = 'offset_expr'; 
+                            scale_expr = eq_spec['scale_expr'];
+                        case 'offset_expr':
+                            next_param = 'cond_expr';
+                            offset_expr = eq_spec['offset_expr'];
+                        case 'cond_expr':
+                            next_param = 'symp_eq';
+                            cond_expr = eq_spec['cond_expr'];
+                        case 'symp_eq':
+                            next_param = 'formula';
+                            symp_eq = eq_spec['symp_eq'];
+                        case 'formula':
+                            next_param = 'eq_metadata';
+                            if (formula == 'const') {
+                                formula = `0+${ans_sym}`;
+                            } else {
+                                formula = symp_eq.substring(symp_eq.indexOf(',')+1, symp_eq.length-1);
+                            }
+                        case 'eq_metadata':
+                            next_param = 'solution';
+                            eq_metadata = eq_spec['eq_metadata'];
+                        case 'solution':
+                            next_param = 'params';
+                            eq_solution = eq_metadata['solution'];
+                        case 'params':
+                            next_param = 'params_str';
+                            params = eq_solution['params'];
+                        case 'params_str':
+                            next_param = 'scaling';
+                            params_str = JSON.stringify(params);
+                        case 'scaling':
+                            next_param = 'scaledBy';
+                            try {
+                                scaling = eq_metadata['scaling'];
+                            } catch(error) {
+                                console.log(`Got invalid scaling data. Setting to default values`);
+                                scaling = scaling_default;
+                                scaling_str = scaling_default_str;
+                            }
+                        case 'scaledBy':
+                            next_param = 'scaledBy_str';
+                            let scaledBy_val = parseFloat(scaling.scaledBy);
+                        case 'scaledBy_str':
+                            next_param = 'scaling_str';
+                            scaledBy_str = "None";
+                            if (scaledBy_val == 1.0e-09) {
+                                scaledBy_str = "giga";
+                            } else if (scaledBy_val == 1.0e-06) {
+                                scaledBy_str = "mega";
+                            } else if (scaledBy_val == 1.0e-15) {
+                                scaledBy_str = "quad";
+                            } else if (scaledBy_val == 1.0e-18) {
+                                scaledBy_str = "quint";
+                            } else if (scaledBy_val == 1.0e6) {
+                                scaledBy_str = "micro";
+                            } else if (scaledBy_val == 1.0e9) {
+                                scaledBy_str = "pico";
+                            } else if (scaledBy_val == 1.0) {
+                                scaledBy_str = "None";
+                            }
+                        case 'scaling_str':
+                            next_param = 'version';
+                            scaling_str = JSON.stringify(scaling);
+                        case 'version':
+                            next_param = 'eq_source';
+                            version = eq_metadata['version'];
+                        case 'eq_source':
+                            next_param = 'condition_satisfied';
+                            eq_source = eq_metadata['eq_source'];
+                        case 'condition_satisfied':
+                            next_param = 'ans';
+                            condition_satisfied = eq_metadata['condition_satisfied'];
+                        case 'ans':
+                            next_param = 'ans_source';
+                            ans_str = eq_solution['ans'];
+                            ans_float = parseFloat(ans_str);
+                            //console.log(`parsing eq_lib, ans_str=${ans_str}`);
+                        case 'ans_source':
+                            next_param = 'mks_val';
+                            ans_source = eq_solution['ans_source'];
+                        case 'mks_val':
+                            next_param = 'validation_status';
+                            mks_val = eq_solution['mks_val'];
+                        case 'validation_status':
+                            next_param = 'validation_timestamp'
+                            validation_status = eq_solution['validation_status'];
+                        case 'validation_timestamp':
+                            done = true;
+                            validation_timestamp = eq_solution['validation_timestamp'];
+                            break;
+                        default:
+                            console.log(`Parsing incoming eq_lib got unexpected case of ${next_param}`);
+                    }
+                    done = true;
+                } catch(error) {
+                    // If anything is missing (or broken) annunciate and keep going
+                    console.log(`Error processing incoming eq_lib when next_param=${next_param}: ${error}`)
+                }
+            }
+
+            console.log(`Before update_grid, ans_symb:${ans_symb}`);
+
+            update_grid(ans_symb);
+            grid.selectNone();
+
+        }
+
+        form.refresh();
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Dynamic Input widget configuration
+
+function dup_rec(rec) {
+    return w2utils.clone(rec);
+}
+function update_grid(ans_symb=tbd) {
+
+    if (ans_symb == tbd) {
+        console.log(`update_grid() ans_symb=tbd; doing nothing`);
+        return
+    }
+
+    // Update eq_lib with global data
+    save_data(symb=>ans_symb);
+    // sets other values too, from the saved ones..
+    get_data(symb=>ans_symb);
+                    
+    if (formula.substring(0,1) == "0+") {
+        formula = 'const';
+    }
+    this_record = { recid: recid, ans_name: ans_name, ans_symb: ans_symb, 
+                    ans_str: ans_str, mks_val: mks_val, 
+                    scale_expr: scale_expr, offset_expr: offset_expr, cond_expr: cond_expr,
+                    eq_stat: validation_status, scaling_str: scaling_str, scaledBy_str: scaledBy_str, version: version, 
+                    formula: formula, dependencies_str:dependencies_str, w2ui:{style:{eq_stat: "background: lightblue;"}} };
+
+    //console.log("this_record: " + this_record);
+
+    grid.add(w2utils.extend(this_record, { recid: recid }));
+
+    action('html', 'top', `<center>Equation Library: ${eq_lib_id}</center>`);
+}
+
+function update_dynamic_param_vals() {
+
+    // Update the dynamic parameter values if needed
+    for ( const [symb, val] of Object.entries(dynamic_params)) {
+        ans_str = get_from_lib( {'symb':symb, 'paramId':'eq_metadata.solution.ans'} );
+        ans_float = parseFloat(ans_str);
+        dynamic_params[symb] = ans_float;
+    }
+
+    dynamic_params_str = JSON.stringify(dynamic_params);
+    action('html', 'bottom', `Dynamic Parameters: ${dynamic_params_str}`);
+}
+
+function init_dyn_config() {
+
+    let rec = w2utils.clone(dyn_rec_default);
+    
+    let step_rec = w2utils.clone(dyn_rec_default);
+    step_rec.incr = step_size;
+
+    let dyn_field = w2utils.clone(dyn_field_default);
+    dyn_field.options.step = step_size;
+
+    dyn_config.form.record = dyn_field;
+
+    //console.log(`dyn_field.options.step:${dyn_field.options.step}`);
+
+    // build the dynamic grid records
+    let cur_recid = 0;
+    for (const [param_symb, param_val] of Object.entries(dynamic_params)) {
+        let cur_rec = w2utils.clone(rec);
+
+        cur_rec.recid = cur_recid+1;
+        cur_rec.ans_name = param_symb;
+        cur_rec.ans_val = param_val;
+        // 10/5/25
+        cur_rec.incr = step_size;
+
+        //log_dict( cur_rec, `${cur_rec.ans_name} has record #${cur_recid}`);
+
+        //console.log(`Adding cur_rec for ${param_symb} to dyn_records[${cur_recid}]`);
+        dyn_records[cur_recid] = w2utils.clone(cur_rec);
+
+        cur_recid += 1;
+    }
+
+    let cur_dyn_field = w2utils.clone(dyn_field);
+    let step_field = w2utils.clone(dyn_field_default);
+
+    cur_dyn_field.html.label = 'Value';
+    step_field.html.label = 'Increment';
+
+    cur_dyn_field.options.step = step_size;
+    step_field.options.step = step_size;
+    step_field.field = 'incr';
+    step_field.incr = step_size;
+
+    //log_dict( cur_dyn_field, `cur_dyn_field[${dyn_recid}]` );
+
+    dyn_fields[dyn_recid] = cur_dyn_field;
+    dyn_fields[step_recid] = step_field;
+
+    return ( {'dyn_records':dyn_records, 'dyn_fields':dyn_fields} );
+}
+
+var first_time = true;
+window.openDynVarPopup = function() {
+
+    let dyn_rec = {};
+
+    update_dynamic_param_vals();
+
+    recs_fields = init_dyn_config();
+
+    //console.log(`dyn_config.grid.records.length=${dyn_config.grid.records.length}, dyn_config.form.fields.length=${dyn_config.form.fields.length}`);
+
+    dyn_config.grid.records = recs_fields.dyn_records;
+    dyn_config.form.fields = recs_fields.dyn_fields;
+
+    //console.log(`---> openDynVarPopup: stringify'd grid.records: ${JSON.stringify(dyn_config.grid.records)}`);
+    //console.log(`---> openDynVarPopup: stringify'd form.fields: ${JSON.stringify(dyn_config.form.fields)}`);
+
+    let grid_rec = {};
+    let grid_records = [];
+    grid_records = dyn_config.grid.records;
+
+    for ( let grid_recNum = 0; grid_recNum < grid_records.length; ++grid_recNum ) {
+        grid_rec = w2utils.clone(grid_records[grid_recNum]);
+        //console.log(`grid_rec #${grid_recNum}: ${JSON.stringify(grid_rec)}`);
+
+        dyn_grid.set(grid_rec.recid, grid_rec);
+        dyn_grid.add(w2utils.extend({ recid: dyn_grid.records.length + 1 }, grid_rec))
+        dyn_form.refresh();
+    }
+
+    w2popup.open({
+        title: 'Dynamic Input',
+        width: 700,
+        height: 250,
+        showMax: false,
+        body: '<div id="main" style="position: absolute; left: 2px; right: 2px; top: 0px; bottom: 3px;"></div>'
+    })
+    .then(e => {
+        update_dynamic_param_vals();
+
+        dyn_layout.render('#w2ui-popup #main');
+        dyn_layout.html('left', dyn_grid);
+        dyn_layout.html('main', dyn_form);
+
+        dyn_form.refresh();
+    })
+    .close(evt => {
+        console.log('popup close')
+        dyn_records = {};
+        dyn_fields = {};
+
+        update_dynamic_param_vals();
+        recs_fields = init_dyn_config();
+
+        dyn_config.grid.records = recs_fields.dyn_records;
+        dyn_config.form.fields = recs_fields.dyn_fields;
+    })
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+</script>
+
+</body>
+</html>
